@@ -3,7 +3,9 @@
 Changes that apps can notice, newest first, in the style of [Keep a Changelog](https://keepachangelog.com). The
 versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor version may change the API.
 
-## Unreleased
+## 0.2.0 (2026-10-12)
+
+The engines are those of 0.1.0.
 
 ### Added
 
