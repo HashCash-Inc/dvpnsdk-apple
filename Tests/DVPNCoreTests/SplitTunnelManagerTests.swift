@@ -1,6 +1,6 @@
 //
 //  SplitTunnelManagerTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 #if os(macOS)
@@ -105,7 +105,7 @@ struct SplitTunnelManagerTests {
         #expect(!manager.settings().isEnabled)
     }
 
-    /// A lapsed subscription stops the proxy and keeps the setting for when Plus is back.
+    /// Stopping, as an app does when it no longer allows split tunnelling, keeps the setting for when it does again.
     @Test
     func stoppingKeepsTheSettingForLater() async throws {
         defer { defaults.removePersistentDomain(forName: suiteName) }

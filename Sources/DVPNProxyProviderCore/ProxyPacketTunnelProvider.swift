@@ -1,6 +1,6 @@
 //
 //  ProxyPacketTunnelProvider.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -66,7 +66,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
 
     override open nonisolated(nonsending) func startTunnel(options: [String: NSObject]? = nil) async throws {
         ProxyStartErrorStore.clear()
-        let network = NetworkModel.current
+        let network = NetworkModel.default
 #if os(macOS)
         // Before the tunnel's interface appears, so the split-tunnel proxy sees both together.
         TunnelStateStore.record(isUp: true, server: nodeHost)
@@ -78,7 +78,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
             try await startProxy(network: network, proxy: proxy)
             try startSocks5Tunnel(proxy: proxy)
         } catch {
-            logger.error("starting tunnel failed due to: \(error.localizedDescription, privacy: .public)")
+            logger.error("starting tunnel failed due to: \(error, privacy: .public)")
             // Only the error text is recorded, never the configuration.
             ProxyStartErrorStore.record(error.localizedDescription)
 #if os(macOS)

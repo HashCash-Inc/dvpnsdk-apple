@@ -1,6 +1,6 @@
 //
 //  HandshakeWaitTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

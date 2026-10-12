@@ -26,7 +26,7 @@ disabled_rules:
 
 nesting:
   type_level: 3
-# Long user-facing copy and preview fixtures stay on one line.
+# Long strings stay on one line.
 line_length:
   warning: 150
   ignores_urls: true

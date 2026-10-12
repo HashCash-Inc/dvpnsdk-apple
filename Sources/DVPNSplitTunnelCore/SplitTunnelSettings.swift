@@ -1,6 +1,6 @@
 //
 //  SplitTunnelSettings.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation
@@ -10,7 +10,7 @@ import Foundation
 /// Which apps bypass the VPN on macOS. The app writes it; the split-tunnel extension reads it
 /// when it starts and decides flow by flow.
 public struct SplitTunnelSettings: Codable, Equatable, Sendable {
-    public enum Mode: String, Codable, Sendable {
+    public enum Mode: String, CaseIterable, Codable, Sendable {
         /// Every app uses the VPN; the extension is not started.
         case disabled
         /// Only the selected apps use the VPN; every other app bypasses it.

@@ -1,6 +1,6 @@
 //
 //  DVPNProxyProviderC.h
-//  DVPNCore
+//  DVPNSDK
 //
 
 #ifndef DVPN_PROXY_PROVIDER_C_H

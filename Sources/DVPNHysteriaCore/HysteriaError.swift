@@ -1,15 +1,16 @@
 //
 //  HysteriaError.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation
 
-public enum HysteriaError: LocalizedError, Equatable, Sendable {
+/// The SDK writes no user text: `description` is for the log.
+public enum HysteriaError: Error, Equatable, Sendable, CustomStringConvertible {
     case storageUnavailable
     case noStoredConfiguration
 
-    public var errorDescription: String? {
+    public var description: String {
         switch self {
         case .storageUnavailable:
             return "Hysteria config directory does not exist"

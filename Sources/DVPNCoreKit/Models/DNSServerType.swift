@@ -1,6 +1,6 @@
 //
 //  DNSServerType.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

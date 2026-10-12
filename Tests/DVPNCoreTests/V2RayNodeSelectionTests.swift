@@ -1,6 +1,6 @@
 //
 //  V2RayNodeSelectionTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNSDK

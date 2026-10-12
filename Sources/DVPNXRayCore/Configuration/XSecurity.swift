@@ -1,6 +1,6 @@
 //
 //  XSecurity.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

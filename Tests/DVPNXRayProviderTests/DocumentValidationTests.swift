@@ -1,6 +1,6 @@
 //
 //  DocumentValidationTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 //  Every typed model must produce a document that Xray-core's own config builder accepts.
 //  Xray-core 26.x rules exercised here: `allowInsecure` no longer exists; plaintext VLESS/Trojan is

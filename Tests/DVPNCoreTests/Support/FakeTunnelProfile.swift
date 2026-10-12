@@ -1,6 +1,6 @@
 //
 //  FakeTunnelProfile.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

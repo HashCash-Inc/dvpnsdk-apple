@@ -1,6 +1,6 @@
 //
 //  ProxyStartErrorStoreTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 @testable import DVPNCoreKit

@@ -1,6 +1,6 @@
 //
 //  XrayInvoke.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

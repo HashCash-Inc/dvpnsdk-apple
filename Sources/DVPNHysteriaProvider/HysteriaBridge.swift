@@ -1,6 +1,6 @@
 //
 //  HysteriaBridge.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

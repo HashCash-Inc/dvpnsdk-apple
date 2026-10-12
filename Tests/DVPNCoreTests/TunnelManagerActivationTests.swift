@@ -1,6 +1,6 @@
 //
 //  TunnelManagerActivationTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -61,7 +61,7 @@ struct TunnelManagerActivationTests {
         await #expect {
             try await manager.activate(tunnel, in: service)
         } throws: { error in
-            (error as? TunnelsServiceError)?.errorDescription?.contains("no valid outbound found") == true
+            (error as? TunnelsServiceError).map { "\($0)".contains("no valid outbound found") } == true
         }
     }
 

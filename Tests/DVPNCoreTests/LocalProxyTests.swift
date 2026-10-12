@@ -1,6 +1,6 @@
 //
 //  LocalProxyTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Darwin

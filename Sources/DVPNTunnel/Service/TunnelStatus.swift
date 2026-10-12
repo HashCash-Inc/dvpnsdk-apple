@@ -1,6 +1,6 @@
 //
 //  TunnelStatus.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

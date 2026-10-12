@@ -6,7 +6,7 @@ cd "$(git rev-parse --show-toplevel)"
 
 files=()
 while IFS= read -r -d '' file; do
-  [[ "$file" == */Generated/* ]] || files+=("$file")
+  files+=("$file")
 done < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.swift')
 [[ ${#files[@]} -eq 0 ]] && exit 0
 

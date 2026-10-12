@@ -1,6 +1,6 @@
 //
 //  NEVPNManager+Ext.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import NetworkExtension

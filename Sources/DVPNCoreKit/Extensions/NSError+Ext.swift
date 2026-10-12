@@ -1,6 +1,6 @@
 //
 //  NSError+Ext.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

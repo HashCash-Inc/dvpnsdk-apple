@@ -1,6 +1,6 @@
 //
 //  WireGuardFileStorage.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

@@ -1,6 +1,6 @@
 //
 //  Socks5Tunnel.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNProxyProviderC

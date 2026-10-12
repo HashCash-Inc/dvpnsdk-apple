@@ -1,6 +1,6 @@
 //
 //  TunnelsServiceTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

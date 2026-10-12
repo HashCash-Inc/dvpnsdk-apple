@@ -1,6 +1,6 @@
 //
 //  TunnelSavingError.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

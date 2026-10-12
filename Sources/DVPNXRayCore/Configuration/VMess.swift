@@ -1,6 +1,6 @@
 //
 //  VMess.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

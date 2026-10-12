@@ -1,6 +1,6 @@
 //
 //  TLSLeafProbe.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import CryptoKit
@@ -26,13 +26,14 @@ enum CertificatePin {
 /// mirrors what Xray's outbound sends (SNI, ALPN h2 + http/1.1, TLS 1.2+) so a server that serves several
 /// certificates presents the same one to both.
 public enum TLSLeafProbe {
-    public enum Error: LocalizedError, Equatable, Sendable {
+    /// The SDK writes no user text: `description` is for the log.
+    public enum Error: Swift.Error, Equatable, Sendable, CustomStringConvertible {
         case invalidPort(host: String, port: Int)
         case timedOut(host: String, port: Int)
         case failed(host: String, port: Int, reason: String)
         case noCertificate(host: String, port: Int)
 
-        public var errorDescription: String? {
+        public var description: String {
             switch self {
             case let .invalidPort(host, port):
                 return "TLS probe of \(host):\(port): invalid port"

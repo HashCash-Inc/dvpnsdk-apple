@@ -1,6 +1,6 @@
 //
 //  StreamSettings.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

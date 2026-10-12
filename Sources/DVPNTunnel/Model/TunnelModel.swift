@@ -1,6 +1,6 @@
 //
 //  TunnelModel.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -30,26 +30,11 @@ final class TunnelModel {
         }
 
         peersModel = peersData
-
-        updatePeers()
     }
 
     func appendEmptyPeer() {
         let peer = PeersModel(index: peersModel.count)
         peersModel.append(peer)
-
-        updatePeers()
-    }
-
-    func deletePeer(peer: PeersModel) {
-        let removedPeer = peersModel.remove(at: peer.index)
-        assert(removedPeer.index == peer.index)
-        for peer in peersModel[peer.index ..< peersModel.count] {
-            assert(peer.index > 0)
-            peer.index -= 1
-        }
-
-        updatePeers()
     }
 
     func save() -> Result<TunnelConfiguration, Error> {
@@ -86,22 +71,6 @@ final class TunnelModel {
             )
 
             return .success(tunnelConfiguration)
-        }
-    }
-
-    func asWireGuardConfig() -> String? {
-        guard case let .success(tunnelConfiguration) = save() else { return nil }
-        return tunnelConfiguration.asWgQuickConfig()
-    }
-}
-
-private extension TunnelModel {
-    func updatePeers() {
-        let numberOfPeers = peersModel.count
-
-        for peer in peersModel {
-            peer.numberOfPeers = numberOfPeers
-            peer.updateExcludePrivateIPs()
         }
     }
 }

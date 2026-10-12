@@ -1,6 +1,6 @@
 //
 //  LocalProxy+Fixture.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

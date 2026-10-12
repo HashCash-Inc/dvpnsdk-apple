@@ -1,6 +1,6 @@
 //
 //  XrayInvokeSmokeTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 @testable import DVPNXRayProvider

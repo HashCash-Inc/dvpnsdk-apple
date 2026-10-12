@@ -1,6 +1,6 @@
 //
 //  WireGuardPacketTunnelProvider.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

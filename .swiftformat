@@ -18,8 +18,6 @@
 --disable hoistAwait,hoistTry
 # Switches return explicitly from every case.
 --disable redundantReturn
-# Removing a SwiftUI Group changes which views its modifiers apply to.
---disable redundantSwiftUIGroup
 # Turns constant-holding structs into enums; a public-API decision, not formatting.
 --disable enumNamespaces
 # One-line `if`/property/function bodies are fine.

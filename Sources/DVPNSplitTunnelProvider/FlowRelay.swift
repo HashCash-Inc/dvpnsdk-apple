@@ -1,6 +1,6 @@
 //
 //  FlowRelay.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 #if os(macOS)

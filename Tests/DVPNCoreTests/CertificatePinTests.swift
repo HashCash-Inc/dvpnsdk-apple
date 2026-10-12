@@ -1,6 +1,6 @@
 //
 //  CertificatePinTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 @testable import DVPNXRayCore

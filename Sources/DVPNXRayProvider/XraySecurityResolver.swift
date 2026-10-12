@@ -1,6 +1,6 @@
 //
 //  XraySecurityResolver.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNXRayCore

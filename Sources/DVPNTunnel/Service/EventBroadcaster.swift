@@ -1,6 +1,6 @@
 //
 //  EventBroadcaster.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

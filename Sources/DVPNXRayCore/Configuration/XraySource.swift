@@ -1,6 +1,6 @@
 //
 //  XraySource.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

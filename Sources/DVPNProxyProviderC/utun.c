@@ -1,6 +1,6 @@
 //
 //  utun.c
-//  DVPNCore
+//  DVPNSDK
 //
 
 #include "DVPNProxyProviderC.h"

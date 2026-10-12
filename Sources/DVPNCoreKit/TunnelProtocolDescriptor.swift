@@ -1,6 +1,6 @@
 //
 //  TunnelProtocolDescriptor.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

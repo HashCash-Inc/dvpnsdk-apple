@@ -1,6 +1,6 @@
 //
 //  NEVPNStatus+Ext.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

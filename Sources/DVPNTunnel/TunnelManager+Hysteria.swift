@@ -1,6 +1,6 @@
 //
 //  TunnelManager+Hysteria.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

@@ -1,6 +1,6 @@
 //
 //  String+ArrayConversion.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

@@ -1,6 +1,6 @@
 //
 //  XConfiguration.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation
@@ -42,11 +42,12 @@ public struct XConfigurationModel: Codable, Sendable, Equatable {
 
 // MARK: - XConfigurationError
 
-public enum XConfigurationError: LocalizedError, Equatable, Sendable {
+/// The SDK writes no user text: `description` is for the log.
+public enum XConfigurationError: Error, Equatable, Sendable, CustomStringConvertible {
     /// `XSecurity.autodetect` reached the renderer; the extension must resolve it (`XraySecurityResolver`) first.
     case unresolvedSecurity
 
-    public var errorDescription: String? {
+    public var description: String {
         switch self {
         case .unresolvedSecurity:
             return "Xray security is not resolved: TLS must be detected before the configuration is rendered."

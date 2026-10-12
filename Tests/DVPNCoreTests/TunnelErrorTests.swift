@@ -1,6 +1,6 @@
 //
 //  TunnelErrorTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 @testable import DVPNTunnel

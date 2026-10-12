@@ -1,6 +1,6 @@
 //
 //  XrayDocumentBuilder.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -12,11 +12,11 @@ import Foundation
 /// a local SOCKS inbound with a password (what hev-socks5-tunnel connects to), routing, `direct`/`block` outbounds
 /// and the asset directory around any proxy outbound object.
 public enum XrayDocumentBuilder {
-    public static let proxyTag = "proxy"
-    public static let inboundTag = "socks-in"
+    static let proxyTag = "proxy"
+    static let inboundTag = "socks-in"
     /// The `freedom` outbound that fragments TLS ClientHellos; the proxy outbound dials through it
     /// (`sockopt.dialerProxy`) when `XObfuscation.tlsFragment` is on.
-    public static let fragmentTag = "fragment"
+    static let fragmentTag = "fragment"
 
     /// - Parameter supportingOutbounds: outbounds the proxy outbound refers to (e.g. its `dialerProxy`);
     ///   placed right after it, before `direct`/`block`.
@@ -50,7 +50,7 @@ public enum XrayDocumentBuilder {
             configuration["env"] = ["xray.location.asset": assetDirectory]
         }
         configuration["inbounds"] = [try inbound(localProxy)]
-        var route = XModel.current
+        var route = XModel.default
         configuration["routing"] = try route.build()
         configuration["outbounds"] = [proxy] + supportingOutbounds + [
             ["tag": "direct", "protocol": "freedom"],
@@ -70,7 +70,7 @@ public enum XrayDocumentBuilder {
                 "auth": "password",
                 "accounts": [["user": localProxy.username, "pass": localProxy.password]],
             ] as [String: Any],
-            "sniffing": try JSONSerialization.jsonObject(with: try JSONEncoder().encode(SniffingModel.current)),
+            "sniffing": try JSONSerialization.jsonObject(with: try JSONEncoder().encode(SniffingModel.default)),
         ]
     }
 }

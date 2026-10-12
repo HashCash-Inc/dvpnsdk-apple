@@ -1,6 +1,6 @@
 //
 //  SecurityResolverTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 @testable import DVPNXRayCore

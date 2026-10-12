@@ -1,6 +1,6 @@
 //
 //  HysteriaConfigurationStore.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -25,14 +25,14 @@ public extension TunnelConfigDirectories {
 // MARK: - HysteriaConfigurationStore
 
 /// Stores the current Hysteria configuration in the App Group so the extension can read it on start.
-public enum HysteriaConfigurationStore {
+package enum HysteriaConfigurationStore {
     private static var configURL: URL? {
         TunnelConfigDirectories.hysteriaConfigDirectory?
             .appending(component: TunnelConfigDirectories.hysteriaCurrentConfigKey, directoryHint: .isDirectory)
             .appending(component: "config.json")
     }
 
-    public static func save(_ configuration: HysteriaConfiguration) throws {
+    package static func save(_ configuration: HysteriaConfiguration) throws {
         guard let destinationURL = configURL else {
             throw HysteriaError.storageUnavailable
         }
@@ -46,7 +46,7 @@ public enum HysteriaConfigurationStore {
         logger.info("Hysteria config saved")
     }
 
-    public static func loadCurrent() throws -> HysteriaConfiguration {
+    package static func loadCurrent() throws -> HysteriaConfiguration {
         guard let configURL, FileManager.default.fileExists(atPath: configURL.path(percentEncoded: false)) else {
             throw HysteriaError.noStoredConfiguration
         }
@@ -54,14 +54,14 @@ public enum HysteriaConfigurationStore {
         return try JSONDecoder().decode(HysteriaConfiguration.self, from: data)
     }
 
-    public static func delete() throws {
+    package static func delete() throws {
         guard let folderURL = configURL?.deletingLastPathComponent() else { return }
         if FileManager.default.fileExists(atPath: folderURL.path(percentEncoded: false)) {
             try FileManager.default.removeItem(at: folderURL)
         }
     }
 
-    public static func exists() -> Bool {
+    package static func exists() -> Bool {
         guard let configURL else { return false }
         return FileManager.default.fileExists(atPath: configURL.path(percentEncoded: false))
     }

@@ -1,6 +1,6 @@
 //
 //  InterfaceConfiguration+AmneziaWG.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation
@@ -8,11 +8,12 @@ import WireGuardKit
 
 // MARK: - AmneziaWGParameterError
 
-public enum AmneziaWGParameterError: LocalizedError, Equatable, Sendable {
+/// The SDK writes no user text: `description` is for the log.
+public enum AmneziaWGParameterError: Error, Equatable, Sendable, CustomStringConvertible {
     case unrecognizedKey(String)
     case invalidValue(key: String, value: String)
 
-    public var errorDescription: String? {
+    public var description: String {
         switch self {
         case let .unrecognizedKey(key):
             return "Unknown AmneziaWG parameter '\(key)'"

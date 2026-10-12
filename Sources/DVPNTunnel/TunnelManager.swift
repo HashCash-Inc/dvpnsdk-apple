@@ -1,6 +1,6 @@
 //
 //  TunnelManager.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -48,40 +48,40 @@ public final class TunnelManager {
 
 // MARK: - Status
 
-extension TunnelManager {
-    var lastTunnel: TunnelContainer? {
+public extension TunnelManager {
+    internal var lastTunnel: TunnelContainer? {
         service?.tunnels.last
     }
 
     /// Synchronous snapshot; `false` until the service has been loaded. Prefer `isActive()`.
-    var isTunnelActive: Bool {
+    internal var isTunnelActive: Bool {
         service?.tunnels.last?.status == .connected
     }
 
-    public func isActive() async -> Bool {
+    func isActive() async -> Bool {
         (try? await loadService())?.tunnels.last?.status == .connected
     }
 
     /// The node the running tunnel connects to, as its provider recorded it: an address or a host name, or nil while
     /// the tunnel is down or when the provider did not say.
-    public nonisolated func connectedNode() -> String? {
+    nonisolated func connectedNode() -> String? {
         TunnelStateStore.server()
     }
 
     /// Waits until the connected tunnel can carry traffic (WireGuard: first handshake done;
     /// Xray: immediately). Returns `false` when not connected or after `timeout`.
-    public func waitUntilReady(timeout: Duration = .seconds(10)) async -> Bool {
+    func waitUntilReady(timeout: Duration = .seconds(10)) async -> Bool {
         guard let tunnel = (try? await loadService())?.tunnels.last else { return false }
         return await tunnel.waitUntilReady(timeout: timeout)
     }
 
     /// Loads the tunnel service ahead of the first `start`/`stop`.
-    func prepare() async throws(TunnelsServiceError) {
+    internal func prepare() async throws(TunnelsServiceError) {
         _ = try await loadService()
     }
 
     /// Status and error events of the managed tunnel. Starts with the latest known status.
-    public nonisolated func events() -> AsyncStream<TunnelEvent> {
+    nonisolated func events() -> AsyncStream<TunnelEvent> {
         broadcaster.subscribe()
     }
 }

@@ -1,6 +1,6 @@
 //
 //  TunnelErrors.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation
@@ -8,28 +8,19 @@ import NetworkExtension
 
 // MARK: - TunnelsServiceError
 
-public enum TunnelsServiceError: LocalizedError, Sendable {
+/// The SDK writes no user text: an app chooses its words by case, `isPermissionDenied` first. `description` is for
+/// the log.
+public enum TunnelsServiceError: Error, Sendable {
     case emptyName
     case nameAlreadyExists
-
     case loadTunnelsFailed(systemError: Error)
     case addTunnelFailed(systemError: Error)
     case removeTunnelFailed(systemError: Error)
-
     case emptyCredentials
     case unsupportedProtocol
     /// `TunnelManager.restart()` found nothing stored to start the tunnel from.
     case noStoredConfiguration
-
     case activationFailed(TunnelActivationError)
-}
-
-// MARK: - Equatable
-
-extension TunnelsServiceError: Equatable {
-    public static func == (lhs: TunnelsServiceError, rhs: TunnelsServiceError) -> Bool {
-        lhs.errorDescription == rhs.errorDescription
-    }
 }
 
 public extension TunnelsServiceError {
@@ -41,8 +32,32 @@ public extension TunnelsServiceError {
         let error = systemError as NSError
         return error.domain == NEVPNErrorDomain && error.code == NEVPNError.Code.configurationReadWriteFailed.rawValue
     }
+}
 
-    var errorDescription: String? {
+// MARK: - Equatable
+
+extension TunnelsServiceError: Equatable {
+    /// By case; a system error counts by its domain and code.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.emptyName, .emptyName), (.nameAlreadyExists, .nameAlreadyExists), (.emptyCredentials, .emptyCredentials),
+             (.unsupportedProtocol, .unsupportedProtocol), (.noStoredConfiguration, .noStoredConfiguration):
+            return true
+        case let (.loadTunnelsFailed(lhs), .loadTunnelsFailed(rhs)), let (.addTunnelFailed(lhs), .addTunnelFailed(rhs)),
+             let (.removeTunnelFailed(lhs), .removeTunnelFailed(rhs)):
+            return lhs.isSameSystemError(as: rhs)
+        case let (.activationFailed(lhs), .activationFailed(rhs)):
+            return lhs == rhs
+        default:
+            return false
+        }
+    }
+}
+
+// MARK: - CustomStringConvertible
+
+extension TunnelsServiceError: CustomStringConvertible {
+    public var description: String {
         switch self {
         case .emptyName:
             return "The name of tunnel is empty"
@@ -61,14 +76,14 @@ public extension TunnelsServiceError {
         case .noStoredConfiguration:
             return "No stored configuration to restart the tunnel from"
         case let .activationFailed(error):
-            return error.errorDescription
+            return error.description
         }
     }
 }
 
 // MARK: - TunnelActivationError
 
-public enum TunnelActivationError: LocalizedError, Sendable {
+public enum TunnelActivationError: Error, Sendable {
     case inactive
     case startingFailed(systemError: Error)
     case savingFailed(systemError: Error)
@@ -78,8 +93,31 @@ public enum TunnelActivationError: LocalizedError, Sendable {
     case timedOut
     /// The tunnel started but the server never completed the first handshake (wrong keys, dead peer, blocked UDP).
     case handshakeTimedOut
+}
 
-    public var errorDescription: String? {
+// MARK: - Equatable
+
+extension TunnelActivationError: Equatable {
+    /// By case; a system error counts by its domain and code.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.inactive, .inactive), (.timedOut, .timedOut), (.handshakeTimedOut, .handshakeTimedOut):
+            return true
+        case let (.startingFailed(lhs), .startingFailed(rhs)), let (.savingFailed(lhs), .savingFailed(rhs)),
+             let (.loadingFailed(lhs), .loadingFailed(rhs)), let (.retryLimitReached(lhs), .retryLimitReached(rhs)):
+            return lhs.isSameSystemError(as: rhs)
+        case let (.activationAttemptFailed(lhs), .activationAttemptFailed(rhs)):
+            return lhs == rhs
+        default:
+            return false
+        }
+    }
+}
+
+// MARK: - CustomStringConvertible
+
+extension TunnelActivationError: CustomStringConvertible {
+    public var description: String {
         switch self {
         case .inactive:
             return "Tunnel is inactive"
@@ -98,5 +136,16 @@ public enum TunnelActivationError: LocalizedError, Sendable {
         case .handshakeTimedOut:
             return "The server did not respond (no handshake)"
         }
+    }
+}
+
+// MARK: - System errors
+
+private extension Error {
+    /// The same domain and code: what tells two system errors apart.
+    func isSameSystemError(as other: any Error) -> Bool {
+        let lhs = self as NSError
+        let rhs = other as NSError
+        return lhs.domain == rhs.domain && lhs.code == rhs.code
     }
 }

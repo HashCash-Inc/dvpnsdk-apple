@@ -1,6 +1,6 @@
 //
 //  NodeType+TunnelProtocol.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

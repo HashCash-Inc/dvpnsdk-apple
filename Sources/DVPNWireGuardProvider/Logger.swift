@@ -1,6 +1,6 @@
 //
 //  Logger.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

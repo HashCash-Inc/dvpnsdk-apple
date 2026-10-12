@@ -1,6 +1,6 @@
 //
 //  XrayConfigBuildTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

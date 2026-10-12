@@ -1,6 +1,6 @@
 //
 //  TunnelInterfaceModel.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -12,13 +12,10 @@ enum TunnelInterfaceField: CaseIterable {
     case name
     case privateKey
     case publicKey
-    case generateKeyPair
     case addresses
     case listenPort
     case mtu
     case dns
-    case status
-    case toggleStatus
 }
 
 final class TunnelInterfaceModel {

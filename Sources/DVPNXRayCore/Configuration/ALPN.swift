@@ -1,6 +1,6 @@
 //
 //  ALPN.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

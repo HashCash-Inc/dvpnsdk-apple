@@ -1,6 +1,6 @@
 //
 //  HysteriaConfiguration.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

@@ -1,6 +1,6 @@
 //
 //  TunnelConfigDirectories.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation
@@ -25,7 +25,7 @@ public enum TunnelConfigDirectories {
     /// tvOS only lets apps write to `Library/Caches` (and `tmp`) inside their containers and treats the
     /// data as purgeable; creating `Library/Application Support` there fails. The app rewrites every
     /// config file right before it activates a tunnel, so a purge costs nothing but one reconnect.
-    public static let homeDirectory: URL? = {
+    package static let homeDirectory: URL? = {
         guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: TunnelEnvironment.appGroupID) else {
             logger.error("No App Group container for \(TunnelEnvironment.appGroupID, privacy: .public)")
             return nil
@@ -66,7 +66,7 @@ package extension TunnelConfigDirectories {
         defaults.set(dns.addresses, forKey: dnsKey)
     }
 
-    /// The resolvers for a proxy tunnel. Builds up to 2.4.0 stored a comma-separated string, which a
+    /// The resolvers for a proxy tunnel. Older builds stored a comma-separated string, which a
     /// system on-demand start can still find before the app connects again; with nothing stored, the
     /// default provider applies.
     static func dns(in defaults: UserDefaults = .shared) -> [String] {

@@ -1,6 +1,6 @@
 //
 //  StepClock.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Synchronization

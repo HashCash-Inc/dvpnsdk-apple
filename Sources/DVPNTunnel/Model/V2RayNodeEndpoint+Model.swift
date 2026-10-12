@@ -1,6 +1,6 @@
 //
 //  V2RayNodeEndpoint+Model.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNSDK

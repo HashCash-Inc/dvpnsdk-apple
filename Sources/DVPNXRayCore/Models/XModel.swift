@@ -1,16 +1,10 @@
 //
 //  XModel.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
 import Foundation
-
-// MARK: - TunnelConfigDirectories: route
-
-extension TunnelConfigDirectories {
-    static let route: String = "XRAY_ROUTE_DATA"
-}
 
 // MARK: - XModel
 
@@ -25,16 +19,6 @@ struct XModel: Codable, Equatable, Sendable {
 
 extension XModel {
     static let `default` = XModel()
-    static var current: XModel {
-        do {
-            guard let data = UserDefaults.shared.data(forKey: TunnelConfigDirectories.route) else {
-                return .default
-            }
-            return try JSONDecoder().decode(XModel.self, from: data)
-        } catch {
-            return .default
-        }
-    }
 }
 
 // MARK: - Submodels

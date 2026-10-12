@@ -1,6 +1,6 @@
 //
 //  SplitTunnelProfile.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 #if os(macOS)

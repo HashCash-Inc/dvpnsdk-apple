@@ -1,6 +1,6 @@
 //
 //  XrayNodeSelectionTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNSDK

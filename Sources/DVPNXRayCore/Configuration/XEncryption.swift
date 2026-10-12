@@ -1,6 +1,6 @@
 //
 //  XEncryption.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

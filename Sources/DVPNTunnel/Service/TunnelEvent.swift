@@ -1,6 +1,6 @@
 //
 //  TunnelEvent.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

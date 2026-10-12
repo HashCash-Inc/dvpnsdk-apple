@@ -1,6 +1,6 @@
 //
 //  Fingerprint.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

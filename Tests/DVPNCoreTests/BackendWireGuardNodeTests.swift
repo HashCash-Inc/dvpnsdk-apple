@@ -1,6 +1,6 @@
 //
 //  BackendWireGuardNodeTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNSDK

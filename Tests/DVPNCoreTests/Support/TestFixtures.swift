@@ -1,6 +1,6 @@
 //
 //  TestFixtures.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

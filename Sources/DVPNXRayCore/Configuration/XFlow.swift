@@ -1,6 +1,6 @@
 //
 //  XFlow.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

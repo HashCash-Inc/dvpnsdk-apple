@@ -1,6 +1,6 @@
 //
 //  XTransport.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

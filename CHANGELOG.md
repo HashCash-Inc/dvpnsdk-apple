@@ -3,6 +3,24 @@
 Changes that apps can notice, newest first, in the style of [Keep a Changelog](https://keepachangelog.com). The
 versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor version may change the API.
 
+## Unreleased
+
+### Changed
+
+- The errors (`TunnelsServiceError`, `TunnelActivationError`, `SplitTunnelError`, `XraySourceError`, `HysteriaError`,
+  `XConfigurationError`, `AmneziaWGParameterError`, `TLSLeafProbe.Error`) are no longer `LocalizedError`s: the SDK writes no user text. Each describes itself for the log
+  (`CustomStringConvertible`), and `TunnelsServiceError` and `TunnelActivationError` compare by case, a system error
+  counting by its domain and code.
+- `SplitTunnelSettings.Mode` is `CaseIterable`.
+- Only the package sees what only it uses: `XraySourceStore.removeIfUnreadable()`, `HysteriaConfigurationStore`,
+  `TunnelConfigDirectories.homeDirectory` and `SplitTunnelManager.isSupported` are `package`, and
+  `XrayDocumentBuilder`'s tags are internal.
+
+### Removed
+
+- `NetworkModel.current`, `NetworkModel.save()` and `TunnelConfigDirectories.network`: the proxy providers run with
+  `NetworkModel.default`, the only value ever stored.
+
 ## 0.2.0 (2026-10-12)
 
 The engines are those of 0.1.0.

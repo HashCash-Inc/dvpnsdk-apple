@@ -1,6 +1,6 @@
 //
 //  SplitTunnelProxyProvider.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 #if os(macOS)

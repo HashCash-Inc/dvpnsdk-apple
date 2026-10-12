@@ -1,6 +1,6 @@
 //
 //  SplitTunnelTrafficTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNSplitTunnelCore

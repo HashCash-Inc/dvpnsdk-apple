@@ -1,6 +1,6 @@
 //
 //  XConfigurationModel+Build.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

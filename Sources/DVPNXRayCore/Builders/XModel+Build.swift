@@ -1,6 +1,6 @@
 //
 //  XModel+Build.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

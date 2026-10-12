@@ -1,6 +1,6 @@
 //
 //  TLSLeafProbeTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 //  Local end-to-end checks of the probe against NWListener servers on the loopback interface.
 //  macOS only: the in-memory PKCS#12 import the TLS server needs is a macOS/iOS API.

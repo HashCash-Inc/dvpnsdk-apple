@@ -1,6 +1,6 @@
 //
 //  XrayNodeEndpoint+Model.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNSDK

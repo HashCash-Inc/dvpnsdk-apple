@@ -1,6 +1,6 @@
 //
 //  TunnelManager+Restart.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

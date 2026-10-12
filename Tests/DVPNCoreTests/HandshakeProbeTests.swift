@@ -1,6 +1,6 @@
 //
 //  HandshakeProbeTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 @testable import DVPNTunnel

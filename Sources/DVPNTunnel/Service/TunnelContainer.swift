@@ -1,6 +1,6 @@
 //
 //  TunnelContainer.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

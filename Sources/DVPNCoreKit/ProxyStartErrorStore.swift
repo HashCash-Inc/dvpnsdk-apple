@@ -1,6 +1,6 @@
 //
 //  ProxyStartErrorStore.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

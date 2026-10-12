@@ -1,6 +1,6 @@
 //
 //  XOutbound.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

@@ -1,6 +1,6 @@
 //
 //  XObfuscation.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

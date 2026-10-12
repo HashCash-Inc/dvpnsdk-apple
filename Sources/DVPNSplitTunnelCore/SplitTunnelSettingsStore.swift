@@ -1,6 +1,6 @@
 //
 //  SplitTunnelSettingsStore.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

@@ -1,6 +1,6 @@
 //
 //  WireGuardConfigTests.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 @testable import DVPNWireGuardCore

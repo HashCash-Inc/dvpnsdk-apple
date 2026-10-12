@@ -1,6 +1,6 @@
 //
 //  XraySourceStore.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
@@ -14,12 +14,13 @@ public extension TunnelConfigDirectories {
 
 // MARK: - XraySourceError
 
-public enum XraySourceError: LocalizedError, Equatable, Sendable {
+/// The SDK writes no user text: `description` is for the log.
+public enum XraySourceError: Error, Equatable, Sendable, CustomStringConvertible {
     case storageUnavailable
     case noStoredConfiguration
     case unreadable(String)
 
-    public var errorDescription: String? {
+    public var description: String {
         switch self {
         case .storageUnavailable:
             return "Xray config directory does not exist"
@@ -82,13 +83,13 @@ public enum XraySourceStore {
     /// Deletes a stored file that no longer decodes (the pre-`XraySource` flat model format).
     /// The app rewrites the file on the next connect. Idempotent; returns `true` when a file was removed.
     @discardableResult
-    public static func removeIfUnreadable() -> Bool {
+    package static func removeIfUnreadable() -> Bool {
         guard exists() else { return false }
         do {
             _ = try loadCurrent()
             return false
         } catch {
-            logger.info("Removing unreadable Xray configuration: \(error.localizedDescription, privacy: .public)")
+            logger.info("Removing unreadable Xray configuration: \(error, privacy: .public)")
             try? delete()
             return true
         }

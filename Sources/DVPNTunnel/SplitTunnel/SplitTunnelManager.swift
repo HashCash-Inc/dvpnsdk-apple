@@ -1,6 +1,6 @@
 //
 //  SplitTunnelManager.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 #if os(macOS)
@@ -11,14 +11,15 @@ import NetworkExtension
 
 // MARK: - SplitTunnelError
 
-public enum SplitTunnelError: LocalizedError, Sendable {
+/// The SDK writes no user text: `description` is for the log.
+public enum SplitTunnelError: Error, Sendable, CustomStringConvertible {
     /// The app declares no split-tunnel extension (`DVPNCoreConfiguration.splitTunnelProviderBundleID`).
     case notSupported
     case loadFailed(systemError: any Error)
     case saveFailed(systemError: any Error)
     case startFailed(systemError: any Error)
 
-    public var errorDescription: String? {
+    public var description: String {
         switch self {
         case .notSupported:
             return "Split tunnelling is not available in this app"
@@ -61,7 +62,7 @@ public final class SplitTunnelManager {
     }
 
     /// Whether this app has a split-tunnel extension at all.
-    public var isSupported: Bool {
+    package var isSupported: Bool {
         configuration.splitTunnelProviderBundleID != nil
     }
 
@@ -101,7 +102,8 @@ public final class SplitTunnelManager {
         try await start(profile)
     }
 
-    /// Stops the proxy and keeps the setting: for a subscription that is no longer Plus, or the setting turned off.
+    /// Stops the proxy and keeps the setting: for when the app no longer allows split tunnelling, or the setting
+    /// turned off.
     /// `startIfEnabled()` brings it back.
     public func stop() async {
         guard let profile = try? await loadProfile() else { return }
@@ -127,7 +129,7 @@ private extension SplitTunnelManager {
                 logger.info("Split tunnel: the running proxy took the new setting")
                 return
             } catch {
-                logger.warning("Split tunnel: the running proxy did not take the new setting, restarting it: \(error.localizedDescription, privacy: .public)")
+                logger.warning("Split tunnel: the running proxy did not take the new setting, restarting it: \(error, privacy: .public)")
             }
         }
         try await start(profile)

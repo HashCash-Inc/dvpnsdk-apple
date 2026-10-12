@@ -1,6 +1,6 @@
 //
 //  UserDefaults+Ext.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import Foundation

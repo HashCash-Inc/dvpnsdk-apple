@@ -1,6 +1,6 @@
 //
 //  NETunnelProviderProtocol+Storage.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit

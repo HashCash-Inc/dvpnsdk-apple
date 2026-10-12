@@ -1,16 +1,10 @@
 //
 //  SniffingModel.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNCoreKit
 import Foundation
-
-// MARK: - TunnelConfigDirectories: sniffing
-
-extension TunnelConfigDirectories {
-    static let sniffing: String = "XRAY_SNIFFIN_DATA"
-}
 
 // MARK: - SniffingModel
 
@@ -34,15 +28,4 @@ extension SniffingModel {
         routeOnly: true,
         excludedDomains: []
     )
-
-    static var current: SniffingModel {
-        do {
-            guard let data = UserDefaults.shared.data(forKey: TunnelConfigDirectories.sniffing) else {
-                return .default
-            }
-            return try JSONDecoder().decode(SniffingModel.self, from: data)
-        } catch {
-            return .default
-        }
-    }
 }

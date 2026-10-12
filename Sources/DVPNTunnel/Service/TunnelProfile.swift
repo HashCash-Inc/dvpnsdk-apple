@@ -1,6 +1,6 @@
 //
 //  TunnelProfile.swift
-//  DVPNCore
+//  DVPNSDK
 //
 
 import DVPNWireGuardCore
