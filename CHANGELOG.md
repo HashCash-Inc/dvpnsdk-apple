@@ -7,6 +7,8 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ### Added
 
+- `TunnelManager.connectedNode()`: the address or host name of the node the running tunnel connects to, as the
+  tunnel's provider recorded it, or nil while the tunnel is down.
 - `TunnelManager.restart()` starts the tunnel again on the node it last used, with the DNS and obfuscation settings
   as they are now, without new credentials. With nothing stored to start from, it throws the new
   `TunnelsServiceError.noStoredConfiguration` and leaves the tunnel as it is.

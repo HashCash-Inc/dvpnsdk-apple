@@ -62,6 +62,12 @@ extension TunnelManager {
         (try? await loadService())?.tunnels.last?.status == .connected
     }
 
+    /// The node the running tunnel connects to, as its provider recorded it: an address or a host name, or nil while
+    /// the tunnel is down or when the provider did not say.
+    public nonisolated func connectedNode() -> String? {
+        TunnelStateStore.server()
+    }
+
     /// Waits until the connected tunnel can carry traffic (WireGuard: first handshake done;
     /// Xray: immediately). Returns `false` when not connected or after `timeout`.
     public func waitUntilReady(timeout: Duration = .seconds(10)) async -> Bool {
