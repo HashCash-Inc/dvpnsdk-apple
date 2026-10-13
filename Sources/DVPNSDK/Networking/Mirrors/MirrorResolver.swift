@@ -26,6 +26,8 @@ actor MirrorResolver {
     private let probe: Probe
     /// How long one resolution may take, the mirror list included, before it gives up.
     private let budget: Duration
+    /// The clock the budget runs on; a test steps it.
+    private let clock: any Clock<Duration>
 
     private var cached: Resolved?
     private var bootstrapped: [Mirror]?
@@ -38,11 +40,13 @@ actor MirrorResolver {
         sniTransport: SNISpoofTransport,
         rootCAPublicKeys: [Data],
         healthTimeout: TimeInterval,
-        budget: Duration = .seconds(30)
+        budget: Duration = .seconds(30),
+        clock: any Clock<Duration> = ContinuousClock()
     ) {
         self.init(
             bootstrap: bootstrap,
             budget: budget,
+            clock: clock,
             probe: { await Self.isHealthy($0, sniTransport: sniTransport, rootCAPublicKeys: rootCAPublicKeys, timeout: healthTimeout) }
         )
     }
@@ -52,12 +56,14 @@ actor MirrorResolver {
     init(
         bootstrap: MirrorsBootstrapService,
         budget: Duration = .seconds(30),
+        clock: any Clock<Duration> = ContinuousClock(),
         mirrors: [Mirror]? = nil,
         resolved: Resolved? = nil,
         probe: @escaping Probe
     ) {
         self.bootstrap = bootstrap
         self.budget = budget
+        self.clock = clock
         self.probe = probe
         bootstrapped = mirrors
         cached = resolved
@@ -142,16 +148,17 @@ private extension MirrorResolver {
     /// let nothing through), and skipping them would leave no mirror until the next refresh. Two passes at most, each
     /// route probed at most once, both within the one budget: a resolution always ends.
     func resolveFromBootstrap() async throws -> Resolved {
-        let deadline = ContinuousClock.now.advanced(by: budget)
+        let budget = ResolutionBudget(budget, clock: clock)
+        defer { budget.cancel() }
         let mirrors = try await mirrorList()
         let remembered = failed.intersection(mirrors.flatMap(Self.routes(of:)))
         log.debug("resolveFromBootstrap probing \(mirrors.count) mirror(s) in parallel, \(remembered.count) route(s) skipped")
-        var (found, newlyFailed) = await probeInParallel(mirrors, skipping: remembered, until: deadline)
+        var (found, newlyFailed) = await probeInParallel(mirrors, skipping: remembered, within: budget)
         failed.formUnion(newlyFailed)
-        if found == nil, !remembered.isEmpty, !Task.isCancelled, ContinuousClock.now < deadline {
+        if found == nil, !remembered.isEmpty, !Task.isCancelled, !budget.isSpent {
             log.debug("resolveFromBootstrap found none — probing the \(remembered.count) skipped route(s) once more")
             failed.subtract(remembered)
-            (found, newlyFailed) = await probeInParallel(mirrors, skipping: failed, until: deadline)
+            (found, newlyFailed) = await probeInParallel(mirrors, skipping: failed, within: budget)
             failed.formUnion(newlyFailed)
         }
         // A caller that gave up (the app's limit on its lookup, a replaced request) is told so, not "no mirror".
@@ -165,12 +172,12 @@ private extension MirrorResolver {
         return found
     }
 
-    /// One pass: every mirror at once, the first healthy route wins and stops the rest, and the deadline stops them all.
+    /// One pass: every mirror at once, the first healthy route wins and stops the rest, and the budget stops them all.
     /// Returns the route found, if any, and the routes that failed on the way.
     func probeInParallel(
         _ mirrors: [Mirror],
         skipping skipped: Set<Resolved>,
-        until deadline: ContinuousClock.Instant
+        within budget: ResolutionBudget
     ) async -> (found: Resolved?, failed: [Resolved]) {
         let probe = probe
         let budget = budget
@@ -179,7 +186,7 @@ private extension MirrorResolver {
                 group.addTask { await Self.probeRoutes(of: mirror, skipping: skipped, with: probe) }
             }
             group.addTask {
-                try? await Task.sleep(until: deadline, clock: .continuous)
+                await budget.wait()
                 return .budgetSpent
             }
             var failures: [Resolved] = []
@@ -194,7 +201,7 @@ private extension MirrorResolver {
                     }
                     pending -= 1
                 case .budgetSpent:
-                    log.error("resolveFromBootstrap gave up after \(budget)")
+                    log.error("resolveFromBootstrap gave up: the budget is spent")
                     group.cancelAll()
                     return (nil, failures)
                 }

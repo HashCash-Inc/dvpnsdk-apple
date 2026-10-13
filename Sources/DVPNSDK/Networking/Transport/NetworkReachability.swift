@@ -15,6 +15,8 @@ actor NetworkReachability {
     /// The latest report; nil until the first one.
     private var status: NWPath.Status?
     private let firstStatusWait: Duration
+    /// The clock the bound runs on; a test steps it.
+    private let clock: any Clock<Duration>
     /// Set once a read has waited the whole bound for a first report that never came, so later reads do not wait again.
     private(set) var hasGivenUpWaiting = false
     /// Reads waiting for the first report; it resumes them, and so does each one's own cancellation.
@@ -23,12 +25,14 @@ actor NetworkReachability {
     private nonisolated(unsafe) var consumer: Task<Void, Never>?
 
     /// `statuses` are the monitor's reports in order, applied by one consumer so a quick change cannot be overtaken.
-    /// `firstStatusWait` bounds how long a read waits for the first.
+    /// `firstStatusWait` bounds how long a read waits for the first, on `clock`.
     init(
         statuses: AsyncStream<NWPath.Status> = NetworkReachability.monitoredStatuses(),
-        firstStatusWait: Duration = .seconds(1)
+        firstStatusWait: Duration = .seconds(1),
+        clock: any Clock<Duration> = ContinuousClock()
     ) {
         self.firstStatusWait = firstStatusWait
+        self.clock = clock
         consumer = Task { [weak self] in
             for await status in statuses {
                 guard let self else { return }
@@ -63,13 +67,14 @@ actor NetworkReachability {
     private func waitForFirstStatus() async {
         guard status == nil, !hasGivenUpWaiting else { return }
         let bound = firstStatusWait
+        let clock = clock
         let wasReported = await withTaskGroup(of: Bool.self) { group in
             group.addTask {
                 await self.firstReport()
                 return true
             }
             group.addTask {
-                try? await Task.sleep(for: bound)
+                try? await clock.sleep(for: bound)
                 return false
             }
             let first = await group.next() ?? false

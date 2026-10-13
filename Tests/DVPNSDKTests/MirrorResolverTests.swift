@@ -154,15 +154,18 @@ struct MirrorResolverTests {
     /// A resolution gives up once its budget is spent, whatever is still probing.
     @Test
     func aResolutionGivesUpWhenItsBudgetIsSpent() async {
-        let resolver = MirrorResolver(bootstrap: noList, budget: .milliseconds(200), mirrors: [Self.regular("hangs.test")]) { _ in
+        let clock = ManualClock()
+        let probing = Mutex(false)
+        let resolver = MirrorResolver(bootstrap: noList, budget: .milliseconds(200), clock: clock, mirrors: [Self.regular("hangs.test")]) { _ in
+            probing.withLock { $0 = true }
             try? await Task.sleep(for: .seconds(10))
             return true
         }
 
-        let elapsed = await ContinuousClock().measure {
-            await #expect(throws: MirrorError.noHealthyMirror) { try await resolver.currentMirror() }
-        }
-        #expect(elapsed < .seconds(2))
+        let resolution = Task { await #expect(throws: MirrorError.noHealthyMirror) { try await resolver.currentMirror() } }
+        await eventually { probing.withLock { $0 } && clock.sleepers == 1 }
+        clock.advance(by: .milliseconds(200))
+        await resolution.value
     }
 
     /// A route that failed is skipped while another route answers.
@@ -227,9 +230,11 @@ struct MirrorResolverTests {
     @Test
     func theSecondPassKeepsToTheBudget() async {
         let probed = Mutex<[MirrorResolver.Resolved]>([])
+        let clock = ManualClock()
         let resolver = MirrorResolver(
             bootstrap: noList,
             budget: .milliseconds(200),
+            clock: clock,
             mirrors: [Self.regular("a.test"), Self.regular("hangs.test")]
         ) { route in
             probed.withLock { $0.append(route) }
@@ -238,10 +243,10 @@ struct MirrorResolverTests {
         }
 
         await resolver.invalidate(.regular(host: "a.test"))
-        let elapsed = await ContinuousClock().measure {
-            await #expect(throws: MirrorError.noHealthyMirror) { try await resolver.currentMirror() }
-        }
-        #expect(elapsed < .seconds(2))
+        let resolution = Task { await #expect(throws: MirrorError.noHealthyMirror) { try await resolver.currentMirror() } }
+        await eventually { probed.withLock { !$0.isEmpty } && clock.sleepers == 1 }
+        clock.advance(by: .milliseconds(200))
+        await resolution.value
         #expect(probed.withLock { $0 } == [.regular(host: "hangs.test")])
     }
 

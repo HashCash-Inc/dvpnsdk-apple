@@ -22,6 +22,8 @@ public final class MirroredTransport: APITransport, Sendable {
     private let isReachable: @Sendable () async -> Bool
     /// The backend, and where the device token comes from.
     private let configuration: BackendConfiguration
+    /// The clock a request's deadline runs on; a test steps it.
+    private let clock: any Clock<Duration>
 
     /// The backend `configuration` names. The clients' live values build one from the `backendConfiguration`
     /// dependency when they are first used; build one yourself to wrap it (a UI test's stand-in) or without TCA.
@@ -52,9 +54,11 @@ public final class MirroredTransport: APITransport, Sendable {
         sessionConfiguration: URLSessionConfiguration,
         freshSessionConfiguration: @escaping @Sendable () -> URLSessionConfiguration = { makeConfiguration(ephemeral: true) },
         resolver: MirrorResolver,
-        isReachable: @escaping @Sendable () async -> Bool
+        isReachable: @escaping @Sendable () async -> Bool,
+        clock: any Clock<Duration> = ContinuousClock()
     ) {
         self.configuration = configuration
+        self.clock = clock
         session = URLSession(configuration: sessionConfiguration)
         self.freshSessionConfiguration = freshSessionConfiguration
         self.resolver = resolver
@@ -166,10 +170,11 @@ private extension MirroredTransport {
         let primaryFailure = PrimaryFailure()
         let limit = request.timeoutInterval
         let path = request.target.path
+        let clock = clock
         return try await withThrowingTaskGroup(of: APIResponse?.self) { group in
             group.addTask { try await operation(primaryFailure) }
             group.addTask {
-                try await Task.sleep(for: .seconds(limit))
+                try await clock.sleep(for: .seconds(limit))
                 return nil
             }
             defer { group.cancelAll() }

@@ -11,10 +11,11 @@ import Testing
 /// "offline", and gives up on a monitor that never reports.
 struct NetworkReachabilityTests {
     private func makeReachability(
-        firstStatusWait: Duration = .seconds(5)
+        firstStatusWait: Duration = .seconds(5),
+        clock: any Clock<Duration> = ContinuousClock()
     ) -> (NetworkReachability, AsyncStream<NWPath.Status>.Continuation) {
         let (statuses, reports) = AsyncStream.makeStream(of: NWPath.Status.self)
-        return (NetworkReachability(statuses: statuses, firstStatusWait: firstStatusWait), reports)
+        return (NetworkReachability(statuses: statuses, firstStatusWait: firstStatusWait, clock: clock), reports)
     }
 
     /// The report that says "offline" arrives after the read started: the read still gets it, not an unknown status.
@@ -59,9 +60,13 @@ struct NetworkReachabilityTests {
     /// only the first read pays the wait.
     @Test
     func aMonitorThatNeverReportsLetsTheRequestThroughAndIsNotWaitedForAgain() async {
-        let (reachability, _) = makeReachability(firstStatusWait: .milliseconds(100))
+        let clock = ManualClock()
+        let (reachability, _) = makeReachability(firstStatusWait: .milliseconds(100), clock: clock)
 
-        #expect(await reachability.isReachable)
+        let firstRead = Task { await reachability.isReachable }
+        await eventually { clock.sleepers == 1 }
+        clock.advance(by: .milliseconds(100))
+        #expect(await firstRead.value)
         #expect(await reachability.hasGivenUpWaiting)
         #expect(await reachability.isReachable)
     }

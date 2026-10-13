@@ -34,7 +34,8 @@ struct HTTPClientExecuteTests {
     private func makeClient(
         mirror: MirrorResolver.Resolved?,
         token: String? = nil,
-        isReachable: @escaping @Sendable () async -> Bool = { true }
+        isReachable: @escaping @Sendable () async -> Bool = { true },
+        clock: any Clock<Duration> = ContinuousClock()
     ) async -> (DefaultHTTPClient, MirrorResolver) {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubProtocol.self]
@@ -47,7 +48,8 @@ struct HTTPClientExecuteTests {
             ),
             sessionConfiguration: configuration,
             resolver: resolver,
-            isReachable: isReachable
+            isReachable: isReachable,
+            clock: clock
         )
         return (DefaultHTTPClient(transport: transport), resolver)
     }
@@ -142,29 +144,36 @@ struct HTTPClientExecuteTests {
     /// with the primary's answer, which says more than the mirror's silence.
     @Test
     func aSilentMirrorEndsTheRequestAtItsDeadlineWithThePrimaryAnswer() async {
-        // The primary takes most of the request's second; the mirror's own wait used to start only then.
-        StubProtocol.answers = ["primary.test": .after(0.8, .status(500)), "mirror.test": .hang]
-        let (client, _) = await makeClient(mirror: .regular(host: "mirror.test"))
+        // The primary takes a while; the mirror's own wait used to start only then.
+        StubProtocol.answers = ["primary.test": .after(0.1, .status(500)), "mirror.test": .hang]
+        let clock = ManualClock()
+        let (client, _) = await makeClient(mirror: .regular(host: "mirror.test"), clock: clock)
         let request = APIRequest(target: Target(), timeoutInterval: 1)
-        let start = ContinuousClock.now
 
-        await #expect(throws: APIError.backend(status: 500, code: nil)) { try await client.execute(request, as: Answer.self) }
+        let execution = Task {
+            await #expect(throws: APIError.backend(status: 500, code: nil)) { try await client.execute(request, as: Answer.self) }
+        }
+        await eventually { StubProtocol.requestedHosts.contains("mirror.test") }
+        clock.advance(by: .seconds(1))
+        await execution.value
 
-        #expect(ContinuousClock.now - start < .milliseconds(1_400))
         #expect(StubProtocol.requestedHosts == ["primary.test", "mirror.test"])
     }
 
     /// With no answer from the primary either, the deadline ends the request as a timeout.
     @Test
     func aSilentMirrorAfterASilentPrimaryEndsAsATimeout() async {
-        StubProtocol.answers = ["primary.test": .after(0.8, .failure(URLError(.timedOut))), "mirror.test": .hang]
-        let (client, _) = await makeClient(mirror: .regular(host: "mirror.test"))
+        StubProtocol.answers = ["primary.test": .after(0.1, .failure(URLError(.timedOut))), "mirror.test": .hang]
+        let clock = ManualClock()
+        let (client, _) = await makeClient(mirror: .regular(host: "mirror.test"), clock: clock)
         let request = APIRequest(target: Target(), timeoutInterval: 1)
-        let start = ContinuousClock.now
 
-        await #expect(throws: APIError.unreachable(.timedOut)) { try await client.execute(request, as: Answer.self) }
-
-        #expect(ContinuousClock.now - start < .milliseconds(1_400))
+        let execution = Task {
+            await #expect(throws: APIError.unreachable(.timedOut)) { try await client.execute(request, as: Answer.self) }
+        }
+        await eventually { StubProtocol.requestedHosts.contains("mirror.test") }
+        clock.advance(by: .seconds(1))
+        await execution.value
     }
 
     /// A request whose caller gave up (the app's limit on its IP lookup) is cancelled with it and fails with
@@ -331,14 +340,18 @@ private final class StubProtocol: URLProtocol, @unchecked Sendable {
         didSet { requestedHosts = [] }
     }
 
-    nonisolated(unsafe) static var requestedHosts: [String] = []
+    private static let hosts = Mutex<[String]>([])
+    static var requestedHosts: [String] {
+        get { hosts.withLock { $0 } }
+        set { hosts.withLock { $0 = newValue } }
+    }
 
     override static func canInit(with _: URLRequest) -> Bool { true }
     override static func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
         let host = request.url?.host ?? ""
-        Self.requestedHosts.append(host)
+        Self.hosts.withLock { $0.append(host) }
         guard let url = request.url, let answer = Self.answers[host] else {
             client?.urlProtocol(self, didFailWithError: URLError(.cannotFindHost))
             return
