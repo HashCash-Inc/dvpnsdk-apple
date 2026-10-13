@@ -16,6 +16,11 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
   `TunnelConfigDirectories.homeDirectory` and `SplitTunnelManager.isSupported` are `package`, and
   `XrayDocumentBuilder`'s tags are internal.
 
+### Fixed
+
+- After a start that failed or timed out, a refused save of the profile with on-demand off is tried once more and
+  logged, instead of being dropped silently with on-demand left on.
+
 ### Removed
 
 - `NetworkModel.current`, `NetworkModel.save()` and `TunnelConfigDirectories.network`: the proxy providers run with

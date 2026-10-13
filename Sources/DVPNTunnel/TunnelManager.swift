@@ -327,6 +327,20 @@ extension TunnelManager {
     /// connection attempt is declared failed (the engine retries the handshake every 5 s).
     static let handshakeTimeout: Duration = .seconds(10)
 
+    /// Turns on-demand off after a start that failed or timed out, so the system does not keep retrying the tunnel in
+    /// the background while the app shows it down. A refused save is tried once more, then logged: the profile keeps
+    /// on-demand on and the next connect saves it again.
+    private func turnOnDemandOff(for tunnel: TunnelContainer, in service: TunnelsService) async {
+        for attempt in 1 ... 2 {
+            do {
+                try await service.set(onDemandEnabled: false, for: tunnel)
+                return
+            } catch {
+                logger.error("Turning on-demand off after a failed start failed (attempt \(attempt)): \(error, privacy: .public)")
+            }
+        }
+    }
+
     func activate(_ tunnel: TunnelContainer, in service: TunnelsService) async throws(TunnelsServiceError) {
         let isProxyEngine = tunnel.descriptor?.id == .xray || tunnel.descriptor?.id == .hysteria
         if isProxyEngine { ProxyStartErrorStore.clear() }
@@ -341,7 +355,7 @@ extension TunnelManager {
             // Every connect saved the profile with on-demand on. A start that failed must not leave the
             // system retrying it in the background while the app shows "disconnected", and one that timed
             // out may still be connecting: stop both, as the handshake timeout below does.
-            try? await service.set(onDemandEnabled: false, for: tunnel)
+            await turnOnDemandOff(for: tunnel, in: service)
             await service.startDeactivation(of: tunnel)
             broadcaster.send(.error(error), remember: false)
             throw .activationFailed(error)
@@ -361,7 +375,7 @@ extension TunnelManager {
             return
         case .timedOut:
             logger.error("No handshake within \(Self.handshakeTimeout) for '\(tunnel.name, privacy: .public)'; stopping")
-            try? await service.set(onDemandEnabled: false, for: tunnel)
+            await turnOnDemandOff(for: tunnel, in: service)
             await service.startDeactivation(of: tunnel)
             let error = TunnelActivationError.handshakeTimedOut
             broadcaster.send(.error(error), remember: false)

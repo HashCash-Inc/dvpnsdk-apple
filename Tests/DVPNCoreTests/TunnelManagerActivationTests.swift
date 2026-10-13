@@ -49,6 +49,29 @@ struct TunnelManagerActivationTests {
         #expect(tunnel.status == .disconnected)
     }
 
+    /// A save the system refuses after a failed start is tried once more, and the failure still reaches the caller.
+    @Test
+    func aRefusedOnDemandOffIsTriedOnceMore() async throws {
+        let profile = FakeTunnelProfile(name: "Xray", providerBundleID: "com.example.vpn.v2ray-ne")
+        profile.isOnDemandEnabled = true
+        profile.startOutcomes = [.fail]
+        struct Refused: Error {}
+        profile.onStart = { profile.saveError = Refused() }
+        let (manager, service) = makeManager([profile])
+        let tunnel = try #require(service.tunnels.first)
+        let savesBefore = profile.saves
+
+        await #expect {
+            try await manager.activate(tunnel, in: service)
+        } throws: { error in
+            if case .activationFailed = error as? TunnelsServiceError { return true }
+            return false
+        }
+        // Two attempts to turn on-demand off; this path saved nothing before the start.
+        #expect(profile.saves == savesBefore + 2)
+        #expect(tunnel.status == .disconnected)
+    }
+
     @Test
     func aProxyEnginesRecordedReasonReachesTheError() async throws {
         defer { ProxyStartErrorStore.clear() }
