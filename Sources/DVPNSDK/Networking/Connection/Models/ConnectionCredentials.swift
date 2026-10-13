@@ -92,6 +92,7 @@ extension ConnectionCredentials: Decodable {
             forKey: .response
         )
 
+        // The node's first address is the endpoint; any further addresses the backend lists are not tried.
         let addrs = try response.decode([String].self, forKey: .addrs)
         guard let host = addrs.first else {
             throw DecodingError.dataCorruptedError(
@@ -168,6 +169,7 @@ extension ConnectionCredentials: Decodable {
         in response: KeyedDecodingContainer<HandshakeResponseKeys>
     ) throws -> WireGuardEndpoint {
         let inner = try decoder.decode(WireGuardHandshakeData.self, from: data)
+        // The first address is the endpoint here too; the rest are not tried.
         guard let firstAddr = inner.addrs.first else {
             throw DecodingError.dataCorruptedError(
                 forKey: .data,
