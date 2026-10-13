@@ -66,6 +66,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
 #if os(macOS)
             TunnelStateStore.record(isUp: false)
 #endif
+            ExtensionLogFile.dump()
             if let adapterError = error as? WireGuardAdapterError { throw Self.map(adapterError) }
             throw error
         }
@@ -87,6 +88,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
                 continuation.resume()
             }
         }
+        ExtensionLogFile.dump()
     }
 
     override open nonisolated(nonsending) func handleAppMessage(_ messageData: Data) async -> Data? {

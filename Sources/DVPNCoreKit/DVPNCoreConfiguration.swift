@@ -112,11 +112,15 @@ package enum TunnelEnvironment {
     /// Resolved from the bootstrapped configuration in the app, or from the
     /// `DVPNAppGroupIdentifier` Info.plist key inside network extensions.
     package static var appGroupID: String {
-        if let configuration { return configuration.appGroupID }
-        if let identifier = Bundle.main.object(forInfoDictionaryKey: infoPlistKey) as? String {
-            return identifier
-        }
+        if let identifier = knownAppGroupID { return identifier }
         preconditionFailure("Set \(infoPlistKey) in Info.plist or call DVPNCore.bootstrap(_:)")
+    }
+
+    /// `appGroupID` when it is known; nil before `DVPNCore.bootstrap(_:)` in a process without the Info.plist key,
+    /// such as a unit test host.
+    package static var knownAppGroupID: String? {
+        if let configuration { return configuration.appGroupID }
+        return Bundle.main.object(forInfoDictionaryKey: infoPlistKey) as? String
     }
 
     package static var sharedDefaults: UserDefaults {

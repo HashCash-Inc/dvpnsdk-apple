@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ## Unreleased
 
+### Added
+
+- `ExtensionLogFile`: each tunnel provider writes the lines the system kept of its own process to a file in the App
+  Group when its tunnel stops or its start fails (`ExtensionLogFile.directory`, `urls()`), so an app can add the
+  extensions' lines to a log it exports. Arguments logged as private stay `<private>`.
+
 ### Changed
 
 - The errors (`TunnelsServiceError`, `TunnelActivationError`, `SplitTunnelError`, `XraySourceError`, `HysteriaError`,

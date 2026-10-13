@@ -84,6 +84,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
 #if os(macOS)
             TunnelStateStore.record(isUp: false)
 #endif
+            ExtensionLogFile.dump()
             throw error
         }
     }
@@ -94,6 +95,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
         TunnelStateStore.record(isUp: false)
 #endif
         stopProxy()
+        ExtensionLogFile.dump()
     }
 }
 
