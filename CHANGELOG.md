@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ## Unreleased
 
+### Fixed
+
+- `WireGuardAdapter.start` builds without the "'weak' ownership of capture 'self'" warning that recent Swift
+  compilers give in every app that builds the package.
+
 ## 0.3.0 (2026-10-13)
 
 The engines are those of 0.1.0. The API changed: see *Changed* and *Removed*.
