@@ -5,6 +5,15 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ## Unreleased
 
+### Changed
+
+- The API client logs under the host app's bundle identifier, like the tunnel layer, instead of `com.dvpnsdk`, so a
+  log an app reads by its subsystem has the requests too.
+- `MirroredTransport` logs one line per request at the notice level, which the system keeps: the method, the path,
+  the status and the backend's error code or the failure, and the time it took. In this line and the transport's
+  others, a path segment that is not a word (an ID an app put in the path) shows as "…".
+- A fallback to a mirror is logged at the notice level instead of info.
+
 ### Fixed
 
 - `WireGuardAdapter.start` builds without the "'weak' ownership of capture 'self'" warning that recent Swift

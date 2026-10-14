@@ -6,7 +6,7 @@
 import Foundation
 import OSLog
 
-private let log = Logger(subsystem: "com.dvpnsdk", category: "bootstrap")
+private let log = Logger.sdk(category: "bootstrap")
 
 /// Races the bootstrap URL list concurrently, returning the first successfully
 /// decoded non-empty mirror list. Slow / unreachable URLs no longer block the

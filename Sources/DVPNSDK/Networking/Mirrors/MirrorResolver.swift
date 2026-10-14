@@ -6,7 +6,7 @@
 import Foundation
 import OSLog
 
-private let log = Logger(subsystem: "com.dvpnsdk", category: "mirror")
+private let log = Logger.sdk(category: "mirror")
 
 /// The one owner of where requests go: whether they prefer a mirror, the mirror resolved for them, the mirror list,
 /// and the routes that failed since the last refresh. The transport reports what happened; this decides.

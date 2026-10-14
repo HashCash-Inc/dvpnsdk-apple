@@ -7,7 +7,7 @@ import Foundation
 import OSLog
 import Synchronization
 
-private let log = Logger(subsystem: "com.dvpnsdk", category: "http")
+private let log = Logger.sdk(category: "http")
 
 // MARK: - MirroredTransport
 
@@ -65,7 +65,23 @@ public final class MirroredTransport: APITransport, Sendable {
         self.isReachable = isReachable
     }
 
+    /// Logs one line per request: the method, the path without IDs (`loggedPath`), the answer or the failure, and the
+    /// time it took.
     public func send(_ request: APIRequest, headers: [String: String]) async throws -> APIResponse {
+        let started = ContinuousClock.now
+        let target = "\(request.target.method.rawValue) \(request.target.loggedPath)"
+        do {
+            let response = try await deliver(request, headers: headers)
+            let answer = response.isSuccess ? "\(response.status)" : Self.describe(.answer(status: response.status, body: response.body))
+            log.notice("\(target, privacy: .public): \(answer, privacy: .public) in \(Self.elapsed(since: started), privacy: .public)")
+            return response
+        } catch {
+            log.notice("\(target, privacy: .public): \(Self.describeFailure(error), privacy: .public) after \(Self.elapsed(since: started), privacy: .public)")
+            throw error
+        }
+    }
+
+    private func deliver(_ request: APIRequest, headers: [String: String]) async throws -> APIResponse {
         do {
             return try await withinDeadline(of: request) { primaryFailure in
                 try await self.route(request, headers: headers, primaryFailure: primaryFailure)
@@ -109,7 +125,7 @@ public final class MirroredTransport: APITransport, Sendable {
 
 private extension MirroredTransport {
     func route(_ request: APIRequest, headers: [String: String], primaryFailure: PrimaryFailure) async throws -> APIResponse {
-        let path = request.target.path
+        let path = request.target.loggedPath
         log.debug("send [\(path, privacy: .public)] start")
 
         // Fail fast when the device has no network at all.
@@ -137,7 +153,7 @@ private extension MirroredTransport {
             return response
         } catch let failure as HardFailure {
             primaryFailure.set(failure)
-            log.info("send [\(path, privacy: .public)] primary hard-failed (\(Self.describeFailure(failure), privacy: .public)) — falling back to mirror")
+            log.notice("send [\(path, privacy: .public)] primary hard-failed (\(Self.describeFailure(failure), privacy: .public)) — falling back to mirror")
             let response: APIResponse
             do {
                 response = try await sendViaMirror(request, headers: headers, retryOnFailure: true)
@@ -169,7 +185,7 @@ private extension MirroredTransport {
     ) async throws -> APIResponse {
         let primaryFailure = PrimaryFailure()
         let limit = request.timeoutInterval
-        let path = request.target.path
+        let path = request.target.loggedPath
         let clock = clock
         return try await withThrowingTaskGroup(of: APIResponse?.self) { group in
             group.addTask { try await operation(primaryFailure) }
@@ -219,7 +235,7 @@ private extension MirroredTransport {
 
 private extension MirroredTransport {
     func sendViaMirror(_ request: APIRequest, headers: [String: String], retryOnFailure: Bool) async throws -> APIResponse {
-        let path = request.target.path
+        let path = request.target.loggedPath
         let resolved = try await resolver.currentMirror()
         log.info("sendViaMirror [\(path, privacy: .public)] mirror used")
         do {
@@ -235,7 +251,7 @@ private extension MirroredTransport {
             }
         } catch {
             if retryOnFailure, Self.isHardFailure(error) {
-                log.info("sendViaMirror [\(path, privacy: .public)] mirror hard-failed (\(Self.describeFailure(error), privacy: .public)) — invalidating and re-resolving")
+                log.notice("sendViaMirror [\(path, privacy: .public)] mirror hard-failed (\(Self.describeFailure(error), privacy: .public)) — invalidating and re-resolving")
                 await resolver.invalidate(resolved)
                 return try await sendViaMirror(request, headers: headers, retryOnFailure: false)
             }
@@ -334,6 +350,14 @@ extension MirroredTransport {
 
     /// A failure for the log: the status or the connection failure, and the backend's error code, which the apps do
     /// not show. Never the backend's `reason`.
+    /// "850 ms" below ten seconds, "12.3 s" above.
+    static func elapsed(since start: ContinuousClock.Instant) -> String {
+        let duration = ContinuousClock.now - start
+        let milliseconds = duration.components.seconds * 1000 + duration.components.attoseconds / 1_000_000_000_000_000
+        guard milliseconds >= 10000 else { return "\(milliseconds) ms" }
+        return "\(Double(milliseconds / 100) / 10) s"
+    }
+
     static func describeFailure(_ error: any Error) -> String {
         switch error {
         case let failure as HardFailure:

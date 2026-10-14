@@ -22,6 +22,16 @@ public extension APITarget {
     var reportsDeviceState: Bool { true }
 }
 
+extension APITarget {
+    /// The path as the log shows it: a segment that is not a word, which could be a device's or an account's ID, is
+    /// "…". A short code, such as a country's, stays.
+    var loggedPath: String {
+        path.split(separator: "/", omittingEmptySubsequences: false)
+            .map { $0.count <= 3 || $0.allSatisfy { $0.isLowercase || $0 == "-" || $0 == "_" } ? String($0) : "…" }
+            .joined(separator: "/")
+    }
+}
+
 public enum HTTPMethod: String, Sendable {
     case get = "GET"
     case post = "POST"

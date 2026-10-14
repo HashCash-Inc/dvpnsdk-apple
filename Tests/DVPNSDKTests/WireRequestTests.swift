@@ -131,6 +131,21 @@ struct WireRequestTests {
         #expect(sent.map(line) == ["GET https://backend.test/config?app_token=app-token"])
         #expect(sent.allSatisfy { $0.httpBody == nil && $0.timeoutInterval == 5 })
     }
+
+    /// The log names a request by its path without IDs: an app's account requests carry the device's.
+    @Test
+    func theLogShowsPathsWithoutIDs() {
+        struct Target: APITarget {
+            let path: String
+            var method: HTTPMethod { .get }
+            var payload: RequestPayload { .none }
+        }
+        #expect(Target(path: "/device/6f1c0e1a-9b2d-4c3e-8f7a-1b2c3d4e5f60/user").loggedPath == "/device/…/user")
+        #expect(Target(path: "/country/de/city").loggedPath == "/country/de/city")
+        #expect(Target(path: "/city/48213/server").loggedPath == "/city/…/server")
+        #expect(Target(path: "/ip").loggedPath == "/ip")
+        #expect(Target(path: "").loggedPath.isEmpty)
+    }
 }
 
 /// Records each request and fails it, so no request leaves the test.
