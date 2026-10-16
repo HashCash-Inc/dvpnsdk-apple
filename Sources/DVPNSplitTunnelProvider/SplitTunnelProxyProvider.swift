@@ -120,7 +120,10 @@ open class SplitTunnelProxyProvider: NETransparentProxyProvider, @unchecked Send
         logger.debug("Flow from '\(app, privacy: .public)' \(bypasses ? "bypasses the VPN" : "stays in the VPN", privacy: .public)")
         guard bypasses else { return false }
         guard let interface = physicalInterface else {
-            logger.warning("No physical interface for \(app, privacy: .public): the flow stays in the VPN")
+            // The app's ID only at the debug level, which the log file never holds: an exported log names no app of
+            // the user's.
+            logger.warning("No physical interface for a flow that bypasses the VPN: it stays in the VPN")
+            logger.debug("No physical interface for '\(app, privacy: .public)'")
             return false
         }
         relays.relay(flow, via: interface, on: queue)

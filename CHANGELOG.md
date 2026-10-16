@@ -7,6 +7,8 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ### Changed
 
+- The split-tunnel proxy's warning about a flow with no physical interface no longer names the app; a debug line,
+  which the log file never holds, does.
 - The API client logs under the host app's bundle identifier, like the tunnel layer, instead of `com.dvpnsdk`, so a
   log an app reads by its subsystem has the requests too.
 - `MirroredTransport` logs one line per request at the notice level, which the system keeps: the method, the path,
