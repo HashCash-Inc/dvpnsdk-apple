@@ -13,6 +13,8 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
   the status and the backend's error code or the failure, and the time it took. In this line and the transport's
   others, a path segment that is not a word (an ID an app put in the path) shows as "…".
 - A fallback to a mirror is logged at the notice level instead of info.
+- `SplitTunnelManager` says that its calls must not overlap or be cancelled: a call pauses inside, so a newer one made
+  in that pause can be overtaken by it, and a cancelled one can start a proxy that is still stopping.
 
 ### Fixed
 

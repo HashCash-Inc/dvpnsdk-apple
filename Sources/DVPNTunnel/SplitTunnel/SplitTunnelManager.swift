@@ -37,6 +37,11 @@ public enum SplitTunnelError: Error, Sendable, CustomStringConvertible {
 /// The proxy runs whenever the setting is enabled, VPN or no VPN, so an on-demand reconnect of the tunnel needs
 /// nothing from the app; the extension itself leaves every flow alone while no tunnel is up. It does not start by
 /// itself after a reboot or a quit: the app calls `startIfEnabled()` when it launches.
+///
+/// Calls must not overlap, and must not be cancelled: make each one after the previous one has returned. A call pauses
+/// inside (loading or saving the configuration, the system's first-use prompt, its waits for the proxy), so a newer
+/// call made in that pause can be overtaken by the older one, and a cancelled call ends its waits at once and can
+/// start a proxy that is still stopping.
 @MainActor
 public final class SplitTunnelManager {
     private let configuration: DVPNCoreConfiguration
