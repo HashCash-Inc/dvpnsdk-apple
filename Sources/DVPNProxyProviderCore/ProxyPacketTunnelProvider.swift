@@ -79,7 +79,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
         } catch {
             logger.error("starting tunnel failed due to: \(error, privacy: .public)")
             // Only the error text is recorded, never the configuration.
-            ProxyStartErrorStore.record(error.localizedDescription)
+            ProxyStartErrorStore.record(error.logDescription)
             TunnelStateStore.record(isUp: false)
             ExtensionLogFile.dump()
             throw error

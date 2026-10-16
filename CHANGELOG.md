@@ -21,6 +21,9 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 ### Fixed
 
 - `TunnelManager.connectedNode()` returns the node on iOS and tvOS too: the tunnel providers recorded it on macOS only.
+- A proxy engine's start reason, which the provider records for the app, and Xray's start error keep the SDK error's
+  own words (its `description`) instead of "The operation couldn't be completed", which they read since the errors
+  stopped being `LocalizedError`s.
 - `WireGuardAdapter.start` builds without the "'weak' ownership of capture 'self'" warning that recent Swift
   compilers give in every app that builds the package.
 

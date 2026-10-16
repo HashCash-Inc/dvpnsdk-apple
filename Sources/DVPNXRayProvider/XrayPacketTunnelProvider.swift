@@ -52,7 +52,7 @@ open class XrayPacketTunnelProvider: ProxyPacketTunnelProvider {
             try XrayInvoke.runXray(configJSON: String(decoding: document, as: UTF8.self))
         } catch {
             // libXray's errors are generic by design; the provider records this text for the app's log.
-            throw NSError.newError("Xray failed to start: \(error.localizedDescription)")
+            throw NSError.newError("Xray failed to start: \(error.logDescription)")
         }
     }
 
