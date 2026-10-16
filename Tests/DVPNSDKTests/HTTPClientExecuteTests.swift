@@ -11,7 +11,7 @@ import Testing
 
 /// `DefaultHTTPClient.execute` over `MirroredTransport` and a stubbed session, end to end: the mirror fallback, the
 /// errors and the device events. The stub answers by host, so the suite runs serially.
-@Suite(.serialized)
+@Suite(.serialized, .timeLimit(.minutes(1)))
 struct HTTPClientExecuteTests {
     private struct Target: APITarget {
         var reportsDeviceState = true
@@ -143,7 +143,7 @@ struct HTTPClientExecuteTests {
     /// 500 and a mirror that never answers end the request at its deadline, not one full timeout per attempt later,
     /// with the primary's answer, which says more than the mirror's silence.
     @Test
-    func aSilentMirrorEndsTheRequestAtItsDeadlineWithThePrimaryAnswer() async {
+    func aSilentMirrorEndsTheRequestAtItsDeadlineWithThePrimaryAnswer() async throws {
         // The primary takes a while; the mirror's own wait used to start only then.
         StubProtocol.answers = ["primary.test": .after(0.1, .status(500)), "mirror.test": .hang]
         let clock = ManualClock()
@@ -153,7 +153,7 @@ struct HTTPClientExecuteTests {
         let execution = Task {
             await #expect(throws: APIError.backend(status: 500, code: nil)) { try await client.execute(request, as: Answer.self) }
         }
-        await eventually { StubProtocol.requestedHosts.contains("mirror.test") }
+        try await eventually { StubProtocol.requestedHosts.contains("mirror.test") }
         clock.advance(by: .seconds(1))
         await execution.value
 
@@ -162,7 +162,7 @@ struct HTTPClientExecuteTests {
 
     /// With no answer from the primary either, the deadline ends the request as a timeout.
     @Test
-    func aSilentMirrorAfterASilentPrimaryEndsAsATimeout() async {
+    func aSilentMirrorAfterASilentPrimaryEndsAsATimeout() async throws {
         StubProtocol.answers = ["primary.test": .after(0.1, .failure(URLError(.timedOut))), "mirror.test": .hang]
         let clock = ManualClock()
         let (client, _) = await makeClient(mirror: .regular(host: "mirror.test"), clock: clock)
@@ -171,7 +171,7 @@ struct HTTPClientExecuteTests {
         let execution = Task {
             await #expect(throws: APIError.unreachable(.timedOut)) { try await client.execute(request, as: Answer.self) }
         }
-        await eventually { StubProtocol.requestedHosts.contains("mirror.test") }
+        try await eventually { StubProtocol.requestedHosts.contains("mirror.test") }
         clock.advance(by: .seconds(1))
         await execution.value
     }

@@ -9,6 +9,7 @@ import Testing
 
 /// The status is unknown until the monitor's first report: a read before it waits for the report instead of reading
 /// "offline", and gives up on a monitor that never reports.
+@Suite(.timeLimit(.minutes(1)))
 struct NetworkReachabilityTests {
     private func makeReachability(
         firstStatusWait: Duration = .seconds(5),
@@ -59,12 +60,12 @@ struct NetworkReachabilityTests {
     /// A monitor that never reports is not the network's fault: the request goes through and fails on its own, and
     /// only the first read pays the wait.
     @Test
-    func aMonitorThatNeverReportsLetsTheRequestThroughAndIsNotWaitedForAgain() async {
+    func aMonitorThatNeverReportsLetsTheRequestThroughAndIsNotWaitedForAgain() async throws {
         let clock = ManualClock()
         let (reachability, _) = makeReachability(firstStatusWait: .milliseconds(100), clock: clock)
 
         let firstRead = Task { await reachability.isReachable }
-        await eventually { clock.sleepers == 1 }
+        try await eventually { clock.sleepers == 1 }
         clock.advance(by: .milliseconds(100))
         #expect(await firstRead.value)
         #expect(await reachability.hasGivenUpWaiting)

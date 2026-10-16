@@ -57,12 +57,19 @@ final class ManualClock: Clock, Sendable {
     }
 }
 
-/// Polls `condition` every millisecond, for two seconds at most, so a test can wait for the code under test to reach
-/// a state (a probe called, a sleep begun) without a fixed sleep of its own.
-func eventually(_ condition: @Sendable () -> Bool) async {
-    var tries = 0
-    while !condition(), tries < 2000 {
-        tries += 1
+/// Polls `condition` every millisecond, for `limit` at most, so a test can wait for the code under test to reach a
+/// state (a probe called, a sleep begun) without a fixed sleep of its own. Throws when the time runs out, so the test
+/// fails there instead of stepping a clock nobody sleeps on yet and waiting for ever.
+func eventually(within limit: Duration = .seconds(10), _ condition: @Sendable () -> Bool) async throws {
+    let deadline = ContinuousClock.now.advanced(by: limit)
+    while !condition() {
+        guard ContinuousClock.now < deadline else { throw ConditionNotMet(limit: limit) }
         try? await Task.sleep(for: .milliseconds(1))
     }
+}
+
+/// `eventually`'s condition did not hold in time.
+struct ConditionNotMet: Error, CustomStringConvertible {
+    let limit: Duration
+    var description: String { "the condition did not hold within \(limit)" }
 }

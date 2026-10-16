@@ -89,6 +89,7 @@ struct MirrorModelTests {
 
 // MARK: - MirrorResolver
 
+@Suite(.timeLimit(.minutes(1)))
 struct MirrorResolverTests {
     private let noList = MirrorsBootstrapService(urls: [], timeout: 1)
 
@@ -153,7 +154,7 @@ struct MirrorResolverTests {
 
     /// A resolution gives up once its budget is spent, whatever is still probing.
     @Test
-    func aResolutionGivesUpWhenItsBudgetIsSpent() async {
+    func aResolutionGivesUpWhenItsBudgetIsSpent() async throws {
         let clock = ManualClock()
         let probing = Mutex(false)
         let resolver = MirrorResolver(bootstrap: noList, budget: .milliseconds(200), clock: clock, mirrors: [Self.regular("hangs.test")]) { _ in
@@ -163,7 +164,7 @@ struct MirrorResolverTests {
         }
 
         let resolution = Task { await #expect(throws: MirrorError.noHealthyMirror) { try await resolver.currentMirror() } }
-        await eventually { probing.withLock { $0 } && clock.sleepers == 1 }
+        try await eventually { probing.withLock { $0 } && clock.sleepers == 1 }
         clock.advance(by: .milliseconds(200))
         await resolution.value
     }
@@ -228,7 +229,7 @@ struct MirrorResolverTests {
     /// The second pass shares the resolution's budget: when the first spent it, the skipped routes wait for the next
     /// resolution.
     @Test
-    func theSecondPassKeepsToTheBudget() async {
+    func theSecondPassKeepsToTheBudget() async throws {
         let probed = Mutex<[MirrorResolver.Resolved]>([])
         let clock = ManualClock()
         let resolver = MirrorResolver(
@@ -244,7 +245,7 @@ struct MirrorResolverTests {
 
         await resolver.invalidate(.regular(host: "a.test"))
         let resolution = Task { await #expect(throws: MirrorError.noHealthyMirror) { try await resolver.currentMirror() } }
-        await eventually { probed.withLock { !$0.isEmpty } && clock.sleepers == 1 }
+        try await eventually { probed.withLock { !$0.isEmpty } && clock.sleepers == 1 }
         clock.advance(by: .milliseconds(200))
         await resolution.value
         #expect(probed.withLock { $0 } == [.regular(host: "hangs.test")])
