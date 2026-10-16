@@ -67,10 +67,9 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
     override open nonisolated(nonsending) func startTunnel(options: [String: NSObject]? = nil) async throws {
         ProxyStartErrorStore.clear()
         let network = NetworkModel.default
-#if os(macOS)
-        // Before the tunnel's interface appears, so the split-tunnel proxy sees both together.
+        // On every platform, for `TunnelManager.connectedNode()`. Before the tunnel's interface appears, so the macOS
+        // split-tunnel proxy sees both together.
         TunnelStateStore.record(isUp: true, server: nodeHost)
-#endif
 
         do {
             try await setTunnelNetworkSettings(makeNetworkSettings(network: network))
@@ -81,9 +80,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
             logger.error("starting tunnel failed due to: \(error, privacy: .public)")
             // Only the error text is recorded, never the configuration.
             ProxyStartErrorStore.record(error.localizedDescription)
-#if os(macOS)
             TunnelStateStore.record(isUp: false)
-#endif
             ExtensionLogFile.dump()
             throw error
         }
@@ -91,9 +88,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
 
     override open nonisolated(nonsending) func stopTunnel(with reason: NEProviderStopReason) async {
         logger.error("tunnel is stopped due to: \(Self.describe(reason), privacy: .public)")
-#if os(macOS)
         TunnelStateStore.record(isUp: false)
-#endif
         stopProxy()
         ExtensionLogFile.dump()
     }

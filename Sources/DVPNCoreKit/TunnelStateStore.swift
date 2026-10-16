@@ -8,10 +8,11 @@ import notify
 
 // MARK: - TunnelStateStore
 
-/// Whether DVPN's packet tunnel is up, as its provider last said: the packet tunnels write it when they start and
-/// stop, whoever started them (the app, System Settings, on-demand), and the macOS split-tunnel proxy, which the
-/// system keeps running, acts only while it is. App Group defaults, plus a notification after
-/// every change so the proxy need not poll.
+/// Whether DVPN's packet tunnel is up, and the node it connects to, as its provider last said: the packet tunnels write
+/// it on every platform when they start and stop, whoever started them (the app, System Settings, on-demand). The app
+/// reads the node (`TunnelManager.connectedNode()`), and the macOS split-tunnel proxy, which the system keeps running,
+/// acts only while the tunnel is up. App Group defaults, plus a notification after every change so the proxy need not
+/// poll.
 package enum TunnelStateStore {
     package static let key = "TUNNEL_IS_UP"
 

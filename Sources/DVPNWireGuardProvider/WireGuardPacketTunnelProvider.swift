@@ -47,11 +47,9 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
             throw PacketTunnelProviderError.savedProtocolConfigurationIsInvalid
         }
 
-#if os(macOS)
-        // Before the tunnel's interface appears, so the split-tunnel proxy sees both together; the node it connects to
-        // is left out of the proxy.
+        // On every platform, for `TunnelManager.connectedNode()`. Before the tunnel's interface appears, so the macOS
+        // split-tunnel proxy sees both together; the node it connects to is left out of the proxy.
         TunnelStateStore.record(isUp: true, server: tunnelConfiguration.peers.first?.endpoint.map { "\($0.host)" })
-#endif
         do {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
                 adapter.start(tunnelConfiguration: tunnelConfiguration) { adapterError in
@@ -63,9 +61,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
                 }
             }
         } catch {
-#if os(macOS)
             TunnelStateStore.record(isUp: false)
-#endif
             ExtensionLogFile.dump()
             if let adapterError = error as? WireGuardAdapterError { throw Self.map(adapterError) }
             throw error
@@ -76,9 +72,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
 
     override open nonisolated(nonsending) func stopTunnel(with reason: NEProviderStopReason) async {
         logger.info("Stopping tunnel")
-#if os(macOS)
         TunnelStateStore.record(isUp: false)
-#endif
 
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             adapter.stop { error in

@@ -20,6 +20,7 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ### Fixed
 
+- `TunnelManager.connectedNode()` returns the node on iOS and tvOS too: the tunnel providers recorded it on macOS only.
 - `WireGuardAdapter.start` builds without the "'weak' ownership of capture 'self'" warning that recent Swift
   compilers give in every app that builds the package.
 
