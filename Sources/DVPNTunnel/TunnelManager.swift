@@ -327,6 +327,10 @@ extension TunnelManager {
     /// connection attempt is declared failed (the engine retries the handshake every 5 s).
     static let handshakeTimeout: Duration = .seconds(10)
 
+    /// How long a failed start waits for its provider to acknowledge that the coming stop follows a failure
+    /// (`TunnelContainer.announceFailedStop(timeout:)`); the stop goes ahead after it either way.
+    static let failedStopNoticeTimeout: Duration = .seconds(2)
+
     /// Turns on-demand off after a start that failed or timed out, so the system does not keep retrying the tunnel in
     /// the background while the app shows it down. A refused save is tried once more, then logged: the profile keeps
     /// on-demand on and the next connect saves it again.
@@ -355,6 +359,10 @@ extension TunnelManager {
             // Every connect saved the profile with on-demand on. A start that failed must not leave the
             // system retrying it in the background while the app shows "disconnected", and one that timed
             // out may still be connecting: stop both, as the handshake timeout below does.
+            // A start that failed wrote its provider's log file, and its tunnel is down, so nothing is announced. One
+            // that timed out is announced as a failure, so its stop writes the file; a provider still inside its start
+            // may not answer in time, and that stop then writes nothing.
+            await tunnel.announceFailedStop(timeout: Self.failedStopNoticeTimeout)
             await turnOnDemandOff(for: tunnel, in: service)
             await service.startDeactivation(of: tunnel)
             broadcaster.send(.error(error), remember: false)
@@ -375,6 +383,8 @@ extension TunnelManager {
             return
         case .timedOut:
             logger.error("No handshake within \(Self.handshakeTimeout, privacy: .public) for '\(tunnel.name, privacy: .public)'; stopping")
+            // The provider sees this stop as `.userInitiated`, which writes no log file; the notice makes it write one.
+            await tunnel.announceFailedStop(timeout: Self.failedStopNoticeTimeout)
             await turnOnDemandOff(for: tunnel, in: service)
             await service.startDeactivation(of: tunnel)
             let error = TunnelActivationError.handshakeTimedOut

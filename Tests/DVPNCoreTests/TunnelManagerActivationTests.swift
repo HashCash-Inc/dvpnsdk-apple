@@ -11,7 +11,8 @@ import Testing
 
 /// What `TunnelManager` does when a start fails: on-demand goes off and the attempt stops,
 /// a proxy engine's recorded reason reaches the error, and a WireGuard tunnel without a first handshake
-/// is stopped.
+/// is stopped. A stop that follows a failure is announced to the provider first, so the provider writes its log
+/// file (`ExtensionLogFile`); a stop the app asks for otherwise is not.
 ///
 /// Every proxy start clears the shared `ProxyStartErrorStore` (App Group defaults), so the suite runs serially.
 @MainActor
@@ -47,6 +48,29 @@ struct TunnelManagerActivationTests {
         }
         #expect(!profile.isOnDemandEnabled)
         #expect(tunnel.status == .disconnected)
+        #expect(!profile.messages.contains(ExtensionLogFile.failedStopNotice), "the tunnel is down")
+    }
+
+    /// A start still connecting when its time runs out is stopped as a failure, announced first.
+    @Test
+    func aStartThatTimesOutAnnouncesItsStop() async throws {
+        let profile = FakeTunnelProfile(name: "Xray", providerBundleID: "com.example.vpn.v2ray-ne")
+        profile.startOutcomes = [.stayConnecting]
+        var announcedBeforeTheStop = false
+        profile.onStop = { [unowned profile] in
+            announcedBeforeTheStop = profile.messages.contains(ExtensionLogFile.failedStopNotice)
+        }
+        let (manager, service) = makeManager([profile])
+        let tunnel = try #require(service.tunnels.first)
+
+        await #expect {
+            try await manager.activate(tunnel, in: service)
+        } throws: { error in
+            if case .activationFailed = error as? TunnelsServiceError { return true }
+            return false
+        }
+        #expect(announcedBeforeTheStop)
+        #expect(profile.stops == 1)
     }
 
     /// A save the system refuses after a failed start is tried once more, and the failure still reaches the caller.
@@ -93,6 +117,10 @@ struct TunnelManagerActivationTests {
         let profile = FakeTunnelProfile(name: "WireGuard", providerBundleID: "com.example.vpn.wireguard-ne")
         profile.isOnDemandEnabled = true
         profile.messageAnswer = Data("public_key=abc\nlast_handshake_time_sec=0\nrx_bytes=0\n".utf8)
+        var announcedBeforeTheStop = false
+        profile.onStop = { [unowned profile] in
+            announcedBeforeTheStop = profile.messages.contains(ExtensionLogFile.failedStopNotice)
+        }
         let (manager, service) = makeManager([profile])
         let tunnel = try #require(service.tunnels.first)
 
@@ -103,6 +131,28 @@ struct TunnelManagerActivationTests {
             return false
         }
         #expect(!profile.isOnDemandEnabled)
+        #expect(profile.stops == 1)
+        #expect(tunnel.status == .disconnected)
+        #expect(announcedBeforeTheStop, "the provider takes the stop for the user's unless told")
+    }
+
+    /// A provider that never answers the announcement does not hold the stop up: the stop goes ahead after
+    /// `TunnelManager.failedStopNoticeTimeout`.
+    @Test(.timeLimit(.minutes(1)))
+    func aProviderThatNeverAnswersIsStoppedAnyway() async throws {
+        let profile = FakeTunnelProfile(name: "WireGuard", providerBundleID: "com.example.vpn.wireguard-ne")
+        profile.messageAnswer = Data("public_key=abc\nlast_handshake_time_sec=0\nrx_bytes=0\n".utf8)
+        profile.unansweredMessages = [ExtensionLogFile.failedStopNotice]
+        let (manager, service) = makeManager([profile])
+        let tunnel = try #require(service.tunnels.first)
+
+        await #expect {
+            try await manager.activate(tunnel, in: service)
+        } throws: { error in
+            if case .activationFailed(.handshakeTimedOut) = error as? TunnelsServiceError { return true }
+            return false
+        }
+        #expect(profile.messages.contains(ExtensionLogFile.failedStopNotice))
         #expect(profile.stops == 1)
         #expect(tunnel.status == .disconnected)
     }
@@ -118,6 +168,22 @@ struct TunnelManagerActivationTests {
 
         #expect(tunnel.status == .connected)
         #expect(profile.stops == 0)
+    }
+
+    /// A stop the app asks for when nothing failed is not announced: the provider writes no log file, which an
+    /// ordinary disconnect would wait for.
+    @Test
+    func aPlannedStopAnnouncesNothing() async throws {
+        let profile = FakeTunnelProfile(name: "WireGuard", providerBundleID: "com.example.vpn.wireguard-ne")
+        profile.messageAnswer = Data("public_key=abc\nlast_handshake_time_sec=1790000000\n".utf8)
+        let (manager, service) = makeManager([profile])
+        let tunnel = try #require(service.tunnels.first)
+        try await manager.activate(tunnel, in: service)
+
+        try await manager.stop()
+
+        #expect(profile.stops == 1)
+        #expect(!profile.messages.contains(ExtensionLogFile.failedStopNotice))
     }
 
     /// A manager over a service of fake profiles that report their status changes to it.

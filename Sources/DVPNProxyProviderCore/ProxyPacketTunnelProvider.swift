@@ -18,6 +18,9 @@ import os
 open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
     open var mtu: Int { 9000 }
 
+    /// Whether the app announced that the coming stop follows a failure (`ExtensionLogFile.failedStopNotice`).
+    private let stopFollowsFailure = OSAllocatedUnfairLock(initialState: false)
+
     override public init() {
         super.init()
     }
@@ -90,7 +93,18 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
         logger.error("tunnel is stopped due to: \(Self.describe(reason), privacy: .public)")
         TunnelStateStore.record(isUp: false)
         stopProxy()
-        ExtensionLogFile.dump()
+        if stopFollowsFailure.withLock({ $0 }) || ExtensionLogFile.isWritten(after: reason) {
+            ExtensionLogFile.dump()
+        }
+    }
+
+    /// Answers `ExtensionLogFile.failedStopNotice`, which makes the coming stop write the log file; any other message
+    /// gets nil. A subclass that overrides this passes what it does not handle to `super`.
+    override open nonisolated(nonsending) func handleAppMessage(_ messageData: Data) async -> Data? {
+        guard messageData == ExtensionLogFile.failedStopNotice else { return nil }
+        stopFollowsFailure.withLock { $0 = true }
+        logger.info("The coming stop follows a failure: it writes the log file")
+        return messageData
     }
 }
 

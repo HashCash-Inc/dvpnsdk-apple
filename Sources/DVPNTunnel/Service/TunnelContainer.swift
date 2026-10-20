@@ -197,6 +197,25 @@ extension TunnelContainer {
         throw .retryLimitReached(lastSystemError: lastError ?? NEVPNError(.configurationUnknown))
     }
 
+    /// Tells the provider that the stop asked for next follows a failure (`ExtensionLogFile.failedStopNotice`), so that
+    /// stop writes its log file, which a stop the app asks for otherwise does not. Does nothing while the tunnel is
+    /// down. Waits for the answer at most `timeout`: a provider that is stuck or gone must not delay the stop.
+    func announceFailedStop(timeout: Duration) async {
+        guard status != .disconnected, tunnelProvider.hasProviderSession else { return }
+        let provider = tunnelProvider
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let resume = ResumeOnce(continuation)
+            Task { @MainActor in
+                _ = try? await provider.sendProviderMessage(ExtensionLogFile.failedStopNotice)
+                resume()
+            }
+            Task { @MainActor [clock] in
+                try? await clock.sleep(for: timeout)
+                resume()
+            }
+        }
+    }
+
     /// Asks the system to stop the tunnel. `.disconnected` arrives through `status`.
     func requestDeactivation() {
         logger.debug("requestDeactivation: Tunnel: \(self.name, privacy: .public)")
@@ -299,5 +318,22 @@ private extension Clock where Duration == Swift.Duration {
     func timeLeft(for timeout: Duration) -> () -> Bool {
         let deadline = now.advanced(by: timeout)
         return { now < deadline }
+    }
+}
+
+// MARK: - ResumeOnce
+
+/// Resumes its continuation the first time it is called; later calls do nothing.
+@MainActor
+private final class ResumeOnce {
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    init(_ continuation: CheckedContinuation<Void, Never>) {
+        self.continuation = continuation
+    }
+
+    func callAsFunction() {
+        continuation?.resume()
+        continuation = nil
     }
 }

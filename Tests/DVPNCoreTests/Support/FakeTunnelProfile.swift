@@ -39,8 +39,12 @@ final class FakeTunnelProfile: TunnelProfile {
     var saveError: (any Error)?
     /// The provider's answer to a message: for WireGuard, its runtime configuration.
     var messageAnswer: Data?
+    /// Messages the provider never answers, as if it were stuck, until its tunnel stops.
+    var unansweredMessages: [Data] = []
     /// Runs when a start attempt begins, before its outcome (the extension recording why it failed, for instance).
     var onStart: (() -> Void)?
+    /// Runs when a stop is asked for, before the provider reports `.disconnected`.
+    var onStop: (() -> Void)?
     var onStatusChange: ((FakeTunnelProfile) -> Void)?
 
     private(set) var saves = 0
@@ -48,6 +52,9 @@ final class FakeTunnelProfile: TunnelProfile {
     private(set) var removals = 0
     private(set) var starts = 0
     private(set) var stops = 0
+    /// Every message sent to the provider, in order.
+    private(set) var messages: [Data] = []
+    private var waitingSenders: [CheckedContinuation<Data?, Never>] = []
 
     init(name: String? = nil, providerBundleID: String? = nil, status: NEVPNStatus = .disconnected) {
         localizedDescription = name
@@ -93,11 +100,17 @@ final class FakeTunnelProfile: TunnelProfile {
 
     func stopTunnel() {
         stops += 1
+        onStop?()
+        // A stopped provider answers nothing more: the system hands each sender still waiting nil.
+        waitingSenders.forEach { $0.resume(returning: nil) }
+        waitingSenders = []
         report(.disconnected)
     }
 
     func sendProviderMessage(_ message: Data) async throws -> Data? {
-        messageAnswer
+        messages.append(message)
+        guard unansweredMessages.contains(message) else { return messageAnswer }
+        return await withCheckedContinuation { waitingSenders.append($0) }
     }
 
     func report(_ status: NEVPNStatus) {

@@ -95,7 +95,7 @@ open class SplitTunnelProxyProvider: NETransparentProxyProvider, @unchecked Send
         monitor.cancel()
         relays.cancelAll()
         logger.info("Split tunnel stopped: \(reason.rawValue, privacy: .public)")
-        ExtensionLogFile.dump()
+        if ExtensionLogFile.isWritten(after: reason) { ExtensionLogFile.dump() }
     }
 
     /// The app's messages (`SplitTunnelMessage`): a setting change is read again here instead of restarting the proxy,

@@ -7,6 +7,12 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ### Changed
 
+- A disconnect or a server switch no longer waits for the provider to write its `ExtensionLogFile`, which takes about
+  ten seconds on an iPhone. A provider now writes the file only after a failure: when its start fails, when its tunnel
+  stops for a reason nobody asked for (a lost network, for instance), and when `TunnelManager` stops a start that
+  timed out or never completed a WireGuard handshake. So a log exported after an ordinary disconnect holds no provider
+  lines from that connection. A subclass of `ProxyPacketTunnelProvider` or `WireGuardPacketTunnelProvider` that
+  overrides `handleAppMessage(_:)` passes the messages it does not handle to `super`.
 - The split-tunnel proxy's warning about a flow with no physical interface no longer names the app; a private debug
   line, which the log file never holds, does.
 - The API client logs under the host app's bundle identifier, like the tunnel layer, instead of `com.dvpnsdk`, so a

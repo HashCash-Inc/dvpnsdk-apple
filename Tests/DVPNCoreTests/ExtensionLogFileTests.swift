@@ -5,12 +5,31 @@
 
 @testable import DVPNCoreKit
 import Foundation
+import NetworkExtension
 import os
 import Testing
 
 /// A provider's log file holds the lines the system kept of its process, in the export's line format, with
-/// private arguments redacted as the system keeps them.
+/// private arguments redacted as the system keeps them. Only a stop nobody asked for writes it.
 struct ExtensionLogFileTests {
+    /// A stop someone asked for writes no file: reading the system's store would hold the stop up.
+    @Test(arguments: [
+        NEProviderStopReason.userInitiated, .providerDisabled, .configurationDisabled, .configurationRemoved,
+        .superceded, .userLogout, .userSwitch, .appUpdate, .sleep, .idleTimeout,
+    ])
+    func aStopSomeoneAskedForWritesNoFile(reason: NEProviderStopReason) {
+        #expect(!ExtensionLogFile.isWritten(after: reason))
+    }
+
+    /// A stop nobody asked for, such as a failure or a lost network, writes the file.
+    @Test(arguments: [
+        NEProviderStopReason.none, .providerFailed, .noNetworkAvailable, .unrecoverableNetworkChange,
+        .authenticationCanceled, .configurationFailed, .connectionFailed,
+    ])
+    func aStopNobodyAskedForWritesTheFile(reason: NEProviderStopReason) {
+        #expect(ExtensionLogFile.isWritten(after: reason))
+    }
+
     @Test
     func theFileHoldsALineLoggedJustBefore() throws {
         let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)

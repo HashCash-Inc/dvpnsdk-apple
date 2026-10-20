@@ -18,6 +18,9 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
         self?.adapterLog(level: logLevel, message: message)
     }
 
+    /// Whether the app announced that the coming stop follows a failure (`ExtensionLogFile.failedStopNotice`).
+    private let stopFollowsFailure = OSAllocatedUnfairLock(initialState: false)
+
     /// Redirect adapter log lines by overriding this in a subclass.
     open func adapterLog(level: WireGuardLogLevel, message: String) {
         // Info, not debug: these lines (resolved endpoint, network settings, backend handle, first
@@ -82,10 +85,19 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
                 continuation.resume()
             }
         }
-        ExtensionLogFile.dump()
+        if stopFollowsFailure.withLock({ $0 }) || ExtensionLogFile.isWritten(after: reason) {
+            ExtensionLogFile.dump()
+        }
     }
 
+    /// Answers `ExtensionLogFile.failedStopNotice`, which makes the coming stop write the log file, and `[0]` with the
+    /// runtime configuration (the handshake probe).
     override open nonisolated(nonsending) func handleAppMessage(_ messageData: Data) async -> Data? {
+        if messageData == ExtensionLogFile.failedStopNotice {
+            stopFollowsFailure.withLock { $0 = true }
+            logger.info("The coming stop follows a failure: it writes the log file")
+            return messageData
+        }
         guard messageData.count == 1, messageData[0] == 0 else { return nil }
 
         let settings = await withCheckedContinuation { (continuation: CheckedContinuation<String?, Never>) in
