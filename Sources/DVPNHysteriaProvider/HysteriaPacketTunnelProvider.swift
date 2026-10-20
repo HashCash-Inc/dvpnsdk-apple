@@ -31,7 +31,12 @@ open class HysteriaPacketTunnelProvider: ProxyPacketTunnelProvider {
         configuration.socks5 = .local(proxy)
 
         logger.info("Starting libhysteria \(HysteriaBridge.version(), privacy: .public)")
-        try HysteriaBridge.start(configJSON: try configuration.jsonString())
+        do {
+            try HysteriaBridge.start(configJSON: try configuration.jsonString())
+        } catch {
+            // The provider logs and records this text for the app's log; libhysteria's can quote what it was given.
+            throw NSError.newError(error.logDescription.redacting(configuration.credentials))
+        }
     }
 
     override open func stopProxy() {

@@ -114,4 +114,16 @@ struct InterfaceConfigurationAmneziaWGTests {
         #expect(interface.initPacketMagicHeader == "1234567891")
         #expect(interface.specialJunk1 == "<b 0xf6ab><r 10>")
     }
+
+    /// An invalid header protection key, a secret the node shares with its clients, shows its length, never its
+    /// value; any other parameter keeps its value.
+    @Test
+    func anInvalidHeaderProtectionKeyShowsItsLengthOnly() {
+        for key in ["HeaderProtectionKey", "headerprotectionkey"] {
+            let error = AmneziaWGParameterError.invalidValue(key: key, value: "distinct-key")
+            #expect(error.description.contains("(12 characters)"))
+            #expect(!error.description.contains("distinct-key"))
+        }
+        #expect(AmneziaWGParameterError.invalidValue(key: "S1", value: "x").description.contains("'x'"))
+    }
 }

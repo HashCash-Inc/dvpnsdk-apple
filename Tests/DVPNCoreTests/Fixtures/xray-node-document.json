@@ -32,6 +32,9 @@
       "tag" : "socks-in"
     }
   ],
+  "log" : {
+    "loglevel" : "none"
+  },
   "outbounds" : [
     {
       "protocol" : "vless",

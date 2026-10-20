@@ -89,7 +89,7 @@ custom_rules:
     # `\(error)`, `\(error, privacy: …)` or `\(error.localizedDescription…)` in any string: a log line's, or a
     # recorded reason that one prints later.
     regex: '\\\(\w*[eE]rror(\.localizedDescription)?(\s*,\s*privacy:[^)]*)?\)'
-    message: "Log an error by its `logDescription` (in DVPNSDK, `MirroredTransport.describeFailure`): printed whole, its user info can hold a file's path and a Swift error's values a key."
+    message: "Log an error by its `logDescription` (in DVPNSDK, `MirroredTransport.describeFailure`): printed whole, its user info can hold a file's path and a Swift error's values a key (README.md, Logs)."
     severity: error
   no_ui:
     name: "No UI"

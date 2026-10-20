@@ -222,6 +222,33 @@ so the result is the same as with the SDK's own client.
 - **On tvOS** the configuration files live under the App Group's `Library/Caches`, the only place the sandbox allows;
   the app writes them again at every connect.
 
+## Logs
+
+Every module logs under the host app's bundle identifier, so an app that reads or exports its log by subsystem gets
+the SDK's lines too. A line holds only what may leave the device:
+
+- **Public:**
+  - fixed text, states, enum cases, counts, durations and versions;
+  - an error's own words: the SDK's own description, or the system's words with the error's domain and code;
+  - the node's data, the same for every client of that node: its host, IP address, port, certificate pin, a
+    fragment of its public key, its protocol parameters (not its keys), and the errors it returns;
+  - the host app's own identifiers (bundle and App Group IDs, the VPN profile's name) and the API's fixed paths;
+  - a public preset the user picked: a DNS provider from the list, a split-tunnel mode, obfuscation on or off.
+- **Private, and only in a debug line that needs it:** the apps the user runs.
+- **Never logged:**
+  - a secret: private, pre-shared and shared symmetric keys, tokens, authorization codes, passwords, a protocol's user
+    ID, the local proxy's username and password;
+  - anything about the user: their own or tunnel address, device or account IDs, file paths, the destinations they
+    visit and their DNS queries, settings beyond public presets;
+  - an error printed whole, a request's query, headers or body, or a response body;
+  - an engine's own traffic log, on standard output and standard error too. Until the next engine build, libhysteria
+    still writes a failed proxied connection's destination to standard error, which an extension discards.
+
+How the SDK keeps to it: every error goes through one helper (`logDescription`; in `DVPNSDK`, the transport's
+`describeFailure`), and lint stops an error being logged whole. Before Xray's or Hysteria's start error is logged or
+recorded, every credential the provider holds is replaced with "…"; WireGuard's engine lines name only the node.
+Xray's own log is off.
+
 ## Building the engines
 
 `Frameworks/<name>.xcframework`, when present, takes precedence over the release download, so a change to an engine is

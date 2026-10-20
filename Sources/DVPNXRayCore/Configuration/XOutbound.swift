@@ -39,6 +39,16 @@ public enum XOutbound: Sendable, Equatable {
         case let .trojan(trojan): return trojan.port
         }
     }
+
+    /// The secrets an engine's text must not show: each user's ID, or the Trojan password. The node's own data (its
+    /// address, port and keys it shows to anyone) is not secret.
+    package var credentials: [String] {
+        switch self {
+        case let .vmess(vmess): return vmess.users.map(\.id)
+        case let .vless(vless): return vless.users.map(\.id)
+        case let .trojan(trojan): return [trojan.password]
+        }
+    }
 }
 
 // MARK: - Codable

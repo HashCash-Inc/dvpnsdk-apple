@@ -34,7 +34,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
         logger.debug("PacketTunnelProvider: Starting tunnel with file-based storage")
         let activationAttemptId = options?["activationAttemptId"] as? String
 
-        logger.info("Starting tunnel from the: \(activationAttemptId == nil ? "OS directly" : "app")")
+        logger.info("Starting tunnel from the: \(activationAttemptId == nil ? "OS directly" : "app", privacy: .public)")
 
         guard let tunnelProviderProtocol = protocolConfiguration as? NETunnelProviderProtocol else {
             logger.error("Protocol configuration is not NETunnelProviderProtocol")
@@ -67,7 +67,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
             throw error
         }
 
-        logger.info("Tunnel interface is \(self.adapter.interfaceName ?? "unknown")")
+        logger.info("Tunnel interface is \(self.adapter.interfaceName ?? "unknown", privacy: .public)")
     }
 
     override open nonisolated(nonsending) func stopTunnel(with reason: NEProviderStopReason) async {

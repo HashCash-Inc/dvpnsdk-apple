@@ -31,11 +31,15 @@ open class XrayPacketTunnelProvider: ProxyPacketTunnelProvider {
     }
 
     override open nonisolated(nonsending) func startProxy(network: NetworkModel, proxy: LocalProxy) async throws {
+        // Every credential the extension holds, to clean out of libXray's text: the local proxy's, and the node's
+        // once its model is loaded.
+        var credentials = proxy.credentials
         do {
-            let resolved: XConfigurationModel = switch try XraySourceStore.loadCurrent() {
-            case let .model(model):
-                await XraySecurityResolver.resolve(model)
+            let model: XConfigurationModel = switch try XraySourceStore.loadCurrent() {
+            case let .model(model): model
             }
+            credentials += model.outbound.credentials
+            let resolved = await XraySecurityResolver.resolve(model)
             if resolved.obfuscation.isEnabled {
                 logger.info("Obfuscation on: TLS ClientHello fragmentation (\(resolved.obfuscation.mode.rawValue, privacy: .public))")
             }
@@ -51,9 +55,14 @@ open class XrayPacketTunnelProvider: ProxyPacketTunnelProvider {
             logger.info("Starting Xray-core \((try? XrayInvoke.xrayVersion()) ?? "unknown", privacy: .public)")
             try XrayInvoke.runXray(configJSON: String(decoding: document, as: UTF8.self))
         } catch {
-            // libXray's errors are generic by design; the provider records this text for the app's log.
-            throw NSError.newError("Xray failed to start: \(error.logDescription)")
+            throw NSError.newError(Self.startErrorText(error, credentials: credentials))
         }
+    }
+
+    /// The text of a failed start, which the provider logs and records for the app's log. libXray's errors are generic
+    /// by design but quote what they were given, such as a malformed user ID whole: every credential is "…".
+    static func startErrorText(_ error: any Error, credentials: [String]) -> String {
+        "Xray failed to start: \(error.logDescription)".redacting(credentials)
     }
 
     override open func stopProxy() {

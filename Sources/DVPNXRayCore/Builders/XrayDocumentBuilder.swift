@@ -44,7 +44,9 @@ public enum XrayDocumentBuilder {
         var proxy = proxyOutbound
         proxy["tag"] = proxyTag
 
-        var configuration: [String: Any] = [:]
+        // Xray's own log is off: it writes to standard output, which an extension discards, and at most levels it names
+        // the destinations the user visits.
+        var configuration: [String: Any] = ["log": ["loglevel": "none"]]
         if let assetDirectory {
             // libXray no longer takes a `datDir`; Xray-core reads its environment from the config root.
             configuration["env"] = ["xray.location.asset": assetDirectory]

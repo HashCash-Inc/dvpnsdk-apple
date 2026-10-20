@@ -233,7 +233,7 @@ private extension TunnelContainer {
             guard status == .connected else { return .unavailable(reason: "tunnel status is \(status)") }
         }
         if observedPending {
-            logger.warning("WireGuard handshake not observed within \(timeout) for '\(self.name, privacy: .public)'")
+            logger.warning("WireGuard handshake not observed within \(timeout, privacy: .public) for '\(self.name, privacy: .public)'")
             return .timedOut
         }
         logger.warning("WireGuard handshake unobservable for '\(self.name, privacy: .public)': \(lastReason, privacy: .public)")

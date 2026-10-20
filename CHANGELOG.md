@@ -7,8 +7,8 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 
 ### Changed
 
-- The split-tunnel proxy's warning about a flow with no physical interface no longer names the app; a debug line,
-  which the log file never holds, does.
+- The split-tunnel proxy's warning about a flow with no physical interface no longer names the app; a private debug
+  line, which the log file never holds, does.
 - The API client logs under the host app's bundle identifier, like the tunnel layer, instead of `com.dvpnsdk`, so a
   log an app reads by its subsystem has the requests too.
 - `MirroredTransport` logs one line per request at the notice level, which the system keeps: the method, the path,
@@ -20,6 +20,12 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 - A log line prints an error by the SDK's own words, or by the system's words with the error's domain and code, never
   whole: no line prints a file error's full path or a Swift error's values. `TunnelActivationError` and
   `SplitTunnelError` add a system error's domain and code to their description.
+- `AmneziaWGParameterError` shows an invalid `HeaderProtectionKey` by its length.
+- Values the SDK owns (a profile's name, timeouts, the tunnel interface) are logged public, so these lines no longer
+  read `<private>`.
+- A path segment of up to three characters shows in the log only when it is letters.
+- Xray's own log is off; it wrote to standard output, which an extension discards.
+- The split-tunnel proxy says whether apps are selected, not how many.
 
 ### Fixed
 
@@ -29,6 +35,11 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
   stopped being `LocalizedError`s.
 - `WireGuardAdapter.start` builds without the "'weak' ownership of capture 'self'" warning that recent Swift
   compilers give in every app that builds the package.
+
+### Security
+
+- Xray's and Hysteria's start errors, which the provider logs and records for the app, show every credential the
+  extension holds as "…" (Xray quotes a malformed VLESS or VMess ID whole).
 
 ## 0.3.0 (2026-10-13)
 

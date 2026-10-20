@@ -255,4 +255,12 @@ struct XrayModelTests {
         """.utf8)
         #expect(throws: (any Error).self) { try JSONDecoder().decode(XraySource.self, from: legacy) }
     }
+
+    /// The credentials an engine's text must not show: each user's ID, or the Trojan password.
+    @Test
+    func anOutboundsCredentialsAreItsUserIDsOrPassword() {
+        #expect(XOutbound.vless(VLESS(address: "192.0.2.1", users: [.init(id: "vless-id")])).credentials == ["vless-id"])
+        #expect(XOutbound.vmess(VMess(address: "192.0.2.1", users: [.init(id: "vmess-id")])).credentials == ["vmess-id"])
+        #expect(XOutbound.trojan(Trojan(password: "trojan-password")).credentials == ["trojan-password"])
+    }
 }

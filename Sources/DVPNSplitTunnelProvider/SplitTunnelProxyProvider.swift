@@ -85,7 +85,7 @@ open class SplitTunnelProxyProvider: NETransparentProxyProvider, @unchecked Send
         }
         let registered = token
         notifyToken.withLock { $0 = registered }
-        logger.info("Split tunnel started: \(loaded.mode.rawValue, privacy: .public), \(loaded.apps.count) app(s)")
+        logger.info("Split tunnel started: \(loaded.mode.rawValue, privacy: .public), \(loaded.appsSelection, privacy: .public)")
     }
 
     override open nonisolated(nonsending) func stopProxy(with reason: NEProviderStopReason) async {
@@ -106,7 +106,7 @@ open class SplitTunnelProxyProvider: NETransparentProxyProvider, @unchecked Send
         case .reloadSettings:
             let loaded = SplitTunnelSettingsStore.load()
             settings.withLock { $0 = loaded }
-            logger.info("Split tunnel settings reloaded: \(loaded.mode.rawValue, privacy: .public), \(loaded.apps.count) app(s)")
+            logger.info("Split tunnel settings reloaded: \(loaded.mode.rawValue, privacy: .public), \(loaded.appsSelection, privacy: .public)")
             return message.data
         }
     }
@@ -117,13 +117,13 @@ open class SplitTunnelProxyProvider: NETransparentProxyProvider, @unchecked Send
         guard !isStopped.withLock({ $0 }), isTunnelUp.withLock({ $0 }) else { return false }
         let app = flow.metaData.sourceAppSigningIdentifier
         let bypasses = !isOwn(app) && settings.withLock { $0.bypassesVPN(app) }
-        logger.debug("Flow from '\(app, privacy: .public)' \(bypasses ? "bypasses the VPN" : "stays in the VPN", privacy: .public)")
+        logger.debug("Flow from '\(app, privacy: .private)' \(bypasses ? "bypasses the VPN" : "stays in the VPN", privacy: .public)")
         guard bypasses else { return false }
         guard let interface = physicalInterface else {
-            // The app's ID only at the debug level, which the log file never holds: an exported log names no app of
-            // the user's.
+            // The app's ID only in a private debug line, which the log file never holds: no log names an app of the
+            // user's.
             logger.warning("No physical interface for a flow that bypasses the VPN: it stays in the VPN")
-            logger.debug("No physical interface for '\(app, privacy: .public)'")
+            logger.debug("No physical interface for '\(app, privacy: .private)'")
             return false
         }
         relays.relay(flow, via: interface, on: queue)
@@ -208,6 +208,14 @@ private extension SplitTunnelProxyProvider {
             prefix: destination.prefix,
             protocol: destination.isUDPOnly ? .UDP : .any
         )
+    }
+}
+
+private extension SplitTunnelSettings {
+    /// Whether apps are selected, for the log: allow-selected with none sends every app around the VPN. How many is
+    /// part of the user's own setting.
+    var appsSelection: String {
+        apps.isEmpty ? "no app selected" : "apps selected"
     }
 }
 #endif

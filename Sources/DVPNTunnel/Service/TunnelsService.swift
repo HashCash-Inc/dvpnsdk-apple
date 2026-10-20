@@ -93,7 +93,7 @@ extension TunnelsService {
                 logger.info(
                     """
                     Removing orphaned tunnel with invalid configuration: \
-                    \(manager.localizedDescription ?? "<unknown>")
+                    \(manager.localizedDescription ?? "<unknown>", privacy: .public)
                     """
                 )
                 do {
@@ -274,7 +274,7 @@ extension TunnelsService {
 
         // Only one tunnel can be active at a time — wait for the others to go down first.
         for other in tunnels where other !== tunnel && other.status != .disconnected {
-            logger.info("Tunnel '\(tunnel.name)' waiting for deactivation of '\(other.name)'")
+            logger.info("Tunnel '\(tunnel.name, privacy: .public)' waiting for deactivation of '\(other.name, privacy: .public)'")
             tunnel.status = .waiting
             await startDeactivation(of: other)
         }
@@ -294,11 +294,11 @@ extension TunnelsService {
 
         switch await tunnel.waitForStatus(in: [.connected, .disconnected], timeout: activationTimeout) {
         case .connected:
-            logger.debug("\(tunnel.name) is successfully activated")
+            logger.debug("\(tunnel.name, privacy: .public) is successfully activated")
         case .disconnected:
             throw .activationAttemptFailed(wasOnDemandEnabled: tunnel.tunnelProvider.isOnDemandEnabled)
         case nil, .some:
-            logger.error("\(tunnel.name) did not reach .connected within \(self.activationTimeout)")
+            logger.error("\(tunnel.name, privacy: .public) did not reach .connected within \(self.activationTimeout, privacy: .public)")
             tunnel.refreshStatus()
             throw .timedOut
         }
@@ -310,7 +310,7 @@ extension TunnelsService {
         tunnel.requestDeactivation()
         _ = await tunnel.waitForStatus(in: [.disconnected], timeout: deactivationTimeout)
         tunnel.refreshStatus()
-        logger.debug("\(tunnel.name) is deactivated (status: \(String(describing: tunnel.status)))")
+        logger.debug("\(tunnel.name, privacy: .public) is deactivated (status: \(String(describing: tunnel.status), privacy: .public))")
     }
 
     /// Disables on-demand and stops the managed tunnel. Returns `false` when nothing was active.
@@ -452,7 +452,7 @@ extension TunnelsService {
         })
         else { return }
 
-        logger.debug("Tunnel '\(tunnel.name)' status changed to '\(profile.connectionStatus.description)'")
+        logger.debug("Tunnel '\(tunnel.name, privacy: .public)' status changed to '\(profile.connectionStatus.description, privacy: .public)'")
         tunnel.refreshStatus()
     }
 }

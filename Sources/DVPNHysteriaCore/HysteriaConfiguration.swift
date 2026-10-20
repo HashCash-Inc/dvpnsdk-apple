@@ -148,4 +148,10 @@ public struct HysteriaConfiguration: Codable, Sendable, Equatable {
         encoder.outputFormatting = [.sortedKeys]
         return String(decoding: try encoder.encode(self), as: UTF8.self)
     }
+
+    /// The secrets an engine's text must not show: the auth, the obfuscation password, and the local proxy's username
+    /// and password. The node's own data (its address, port, certificate pin and server name) is not secret.
+    package var credentials: [String] {
+        [auth, obfs?.password, socks5.username, socks5.password].compactMap(\.self)
+    }
 }

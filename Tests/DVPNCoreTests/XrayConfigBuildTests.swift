@@ -55,6 +55,8 @@ struct XrayConfigBuildTests {
         #expect(tlsSettings["pinnedPeerCertSha256"] == nil)
 
         #expect(json["routing"] != nil)
+        // Xray's own log is off: it names the destinations the user visits.
+        #expect((json["log"] as? [String: Any])?["loglevel"] as? String == "none")
     }
 
     /// A sniffed name only chooses a route: the node connects to the address the device looked up through its chosen

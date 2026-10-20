@@ -33,4 +33,13 @@ struct HysteriaConfigurationTests {
         let proxy = LocalProxy(port: 49_152, username: "user", password: "pass")
         #expect(HysteriaConfiguration.SOCKS5.local(proxy) == .init(listen: "[::1]:49152", username: "user", password: "pass"))
     }
+
+    /// The credentials an engine's text must not show: the auth, the obfuscation password and the local proxy's.
+    @Test
+    func theCredentialsAreTheAuthTheObfsPasswordAndTheProxys() {
+        var configuration = HysteriaConfiguration(server: "192.0.2.1", auth: "the-auth", obfs: .init(password: "the-obfs"))
+        configuration.socks5 = .local(LocalProxy(port: 49_152, username: "user", password: "pass"))
+        #expect(Set(configuration.credentials) == ["the-auth", "the-obfs", "user", "pass"])
+        #expect("auth the-auth refused by 192.0.2.1".redacting(configuration.credentials) == "auth … refused by 192.0.2.1")
+    }
 }

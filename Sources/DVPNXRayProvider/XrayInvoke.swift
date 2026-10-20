@@ -76,7 +76,8 @@ enum XrayInvoke {
         do {
             response = try JSONDecoder().decode(Response<Result>.self, from: Data(rawResponse.utf8))
         } catch {
-            logger.error("Xray \(method, privacy: .public) returned an undecodable response: \(rawResponse, privacy: .public)")
+            // Its length only: a reply can quote the configuration it was given.
+            logger.error("Xray \(method, privacy: .public) returned an undecodable response of \(rawResponse.utf8.count) bytes")
             throw NSError.newError("Xray \(method) returned an undecodable response")
         }
         guard response.success else {

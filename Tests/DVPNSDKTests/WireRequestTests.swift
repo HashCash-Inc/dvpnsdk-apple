@@ -143,6 +143,10 @@ struct WireRequestTests {
         #expect(Target(path: "/device/6f1c0e1a-9b2d-4c3e-8f7a-1b2c3d4e5f60/user").loggedPath == "/device/…/user")
         #expect(Target(path: "/country/de/city").loggedPath == "/country/de/city")
         #expect(Target(path: "/city/48213/server").loggedPath == "/city/…/server")
+        // A short code stays only when it is letters: a short number could be an ID.
+        #expect(Target(path: "/server/42/credentials").loggedPath == "/server/…/credentials")
+        #expect(Target(path: "/city/7/server").loggedPath == "/city/…/server")
+        #expect(Target(path: "/country/DE/city").loggedPath == "/country/DE/city")
         #expect(Target(path: "/ip").loggedPath == "/ip")
         #expect(Target(path: "").loggedPath.isEmpty)
     }

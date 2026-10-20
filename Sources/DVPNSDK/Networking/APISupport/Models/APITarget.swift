@@ -24,10 +24,14 @@ public extension APITarget {
 
 extension APITarget {
     /// The path as the log shows it: a segment that is not a word, which could be a device's or an account's ID, is
-    /// "…". A short code, such as a country's, stays.
+    /// "…". A short code of letters, such as a country's, stays; a short number does not.
     var loggedPath: String {
         path.split(separator: "/", omittingEmptySubsequences: false)
-            .map { $0.count <= 3 || $0.allSatisfy { $0.isLowercase || $0 == "-" || $0 == "_" } ? String($0) : "…" }
+            .map { segment in
+                let isCode = segment.count <= 3 && segment.allSatisfy(\.isLetter)
+                let isWord = segment.allSatisfy { $0.isLowercase || $0 == "-" || $0 == "_" }
+                return isCode || isWord ? String(segment) : "…"
+            }
             .joined(separator: "/")
     }
 }

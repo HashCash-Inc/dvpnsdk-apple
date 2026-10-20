@@ -29,6 +29,9 @@ public struct LocalProxy: Equatable, Sendable {
     /// `[::1]:<port>`, the listen address the engines take.
     public var listenAddress: String { "[\(Self.host)]:\(port)" }
 
+    /// The secrets an engine's text must not show: the username and the password.
+    package var credentials: [String] { [username, password] }
+
     /// A free loopback port, found by binding port 0, and credentials of 32 random hex characters each
     /// (no characters that need quoting in YAML or JSON).
     public static func random() throws -> LocalProxy {

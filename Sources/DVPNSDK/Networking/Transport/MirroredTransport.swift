@@ -226,7 +226,7 @@ private extension MirroredTransport {
     func pingPrimary() async -> Bool {
         let healthURL = configuration.backendURL.appendingPathComponent("health")
         let ok = await HealthCheck.succeeds(url: healthURL, timeout: configuration.mirrorRequestTimeout)
-        log.debug("pingPrimary [\(healthURL.absoluteString, privacy: .public)] -> \(ok ? "OK" : "FAIL")")
+        log.debug("pingPrimary [\(healthURL.absoluteString, privacy: .public)] -> \(ok ? "OK" : "FAIL", privacy: .public)")
         return ok
     }
 }

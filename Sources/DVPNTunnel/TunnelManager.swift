@@ -374,7 +374,7 @@ extension TunnelManager {
             logger.warning("Cannot verify the handshake for '\(tunnel.name, privacy: .public)' (\(reason, privacy: .public)); keeping the tunnel")
             return
         case .timedOut:
-            logger.error("No handshake within \(Self.handshakeTimeout) for '\(tunnel.name, privacy: .public)'; stopping")
+            logger.error("No handshake within \(Self.handshakeTimeout, privacy: .public) for '\(tunnel.name, privacy: .public)'; stopping")
             await turnOnDemandOff(for: tunnel, in: service)
             await service.startDeactivation(of: tunnel)
             let error = TunnelActivationError.handshakeTimedOut

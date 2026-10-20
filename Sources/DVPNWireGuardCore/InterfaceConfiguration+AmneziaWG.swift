@@ -18,7 +18,9 @@ public enum AmneziaWGParameterError: Error, Equatable, Sendable, CustomStringCon
         case let .unrecognizedKey(key):
             return "Unknown AmneziaWG parameter '\(key)'"
         case let .invalidValue(key, value):
-            return "Invalid value '\(value)' for AmneziaWG parameter '\(key)'"
+            // The header protection key is a secret the node shares with its clients: its length only.
+            let shown = key.lowercased() == "headerprotectionkey" ? "(\(value.count) characters)" : "'\(value)'"
+            return "Invalid value \(shown) for AmneziaWG parameter '\(key)'"
         }
     }
 }
