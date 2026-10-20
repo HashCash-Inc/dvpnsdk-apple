@@ -30,7 +30,7 @@ public enum SplitTunnelSettingsStore {
         do {
             return try JSONDecoder().decode(SplitTunnelSettings.self, from: data)
         } catch {
-            logger.error("Split-tunnel settings do not decode: \(error.localizedDescription, privacy: .public)")
+            logger.error("Split-tunnel settings do not decode: \(error.logDescription, privacy: .public)")
             return .disabled
         }
     }

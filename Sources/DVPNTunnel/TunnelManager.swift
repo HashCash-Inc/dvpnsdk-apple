@@ -157,7 +157,7 @@ extension TunnelManager {
             do {
                 tunnelConfiguration = try configuration.applyingAmneziaWG(amneziaParameters)
             } catch {
-                logger.error("Invalid AmneziaWG parameters: \(error, privacy: .public)")
+                logger.error("Invalid AmneziaWG parameters: \(error.logDescription, privacy: .public)")
                 throw .addTunnelFailed(systemError: error)
             }
         }
@@ -216,7 +216,7 @@ extension TunnelManager {
             do {
                 model = try V2RayNodeSelection.model(for: node, uuid: uid)
             } catch {
-                logger.error("V2RAY node \(node.host, privacy: .public) offers no inbound this client can use: \(error, privacy: .public)")
+                logger.error("V2RAY node \(node.host, privacy: .public) offers no inbound this client can use: \(error.logDescription, privacy: .public)")
                 throw .emptyCredentials
             }
         case let .xrayNode(node):
@@ -245,7 +245,7 @@ extension TunnelManager {
         do {
             try XraySourceStore.save(source)
         } catch {
-            logger.error("Failed to store Xray configuration: \(error, privacy: .public)")
+            logger.error("Failed to store Xray configuration: \(error.logDescription, privacy: .public)")
             throw .addTunnelFailed(systemError: error)
         }
         let tunnel = try await service.startProxyTunnel(descriptor, onDemandEnabled: true)
@@ -336,7 +336,7 @@ extension TunnelManager {
                 try await service.set(onDemandEnabled: false, for: tunnel)
                 return
             } catch {
-                logger.error("Turning on-demand off after a failed start failed (attempt \(attempt)): \(error, privacy: .public)")
+                logger.error("Turning on-demand off after a failed start failed (attempt \(attempt)): \(error.logDescription, privacy: .public)")
             }
         }
     }

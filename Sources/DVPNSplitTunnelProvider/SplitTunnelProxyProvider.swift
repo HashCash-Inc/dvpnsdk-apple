@@ -176,7 +176,7 @@ private extension SplitTunnelProxyProvider {
         do {
             try await setTunnelNetworkSettings(network)
         } catch where !offering {
-            logger.error("Split tunnel: no rules were refused (\(error.localizedDescription, privacy: .public)); offering every flow")
+            logger.error("Split tunnel: no rules were refused (\(error.logDescription, privacy: .public)); offering every flow")
             try await setRules(offering: true)
         }
     }

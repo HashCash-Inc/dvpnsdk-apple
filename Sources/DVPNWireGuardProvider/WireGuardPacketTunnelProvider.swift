@@ -77,7 +77,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             adapter.stop { error in
                 if let error {
-                    logger.error("Failed to stop WireGuard adapter: \(error.localizedDescription, privacy: .public)")
+                    logger.error("Failed to stop WireGuard adapter: \(error.logDescription, privacy: .public)")
                 }
                 continuation.resume()
             }
@@ -107,7 +107,7 @@ open class WireGuardPacketTunnelProvider: NEPacketTunnelProvider {
             return .dnsResolutionFailure
 
         case let .setNetworkSettings(error):
-            logger.error("Starting tunnel failed with setTunnelNetworkSettings returning \(error.localizedDescription, privacy: .public)")
+            logger.error("Starting tunnel failed with setTunnelNetworkSettings returning \(error.logDescription, privacy: .public)")
             return .couldNotSetNetworkSettings
 
         case let .startWireGuardBackend(errorCode):

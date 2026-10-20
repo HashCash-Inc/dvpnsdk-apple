@@ -26,6 +26,30 @@ public enum WireGuardAdapterError: Error {
     case startWireGuardBackend(Int32)
 }
 
+extension WireGuardAdapterError {
+    /// What a log line says of `error`: an adapter error's case with the system code or the node hosts it carries,
+    /// anything else its domain and code. Never the error whole, nor "The operation couldn't be completed".
+    static func logText(of error: Error) -> String {
+        switch error as? WireGuardAdapterError {
+        case .cannotLocateTunnelFileDescriptor:
+            return "cannotLocateTunnelFileDescriptor"
+        case .invalidState:
+            return "invalidState"
+        case .dnsResolution(let errors):
+            let hosts = errors.map { "\($0.address): \($0.errorDescription ?? String($0.errorCode))" }
+            return "dnsResolution (\(hosts.joined(separator: ", ")))"
+        case .setNetworkSettings(let systemError):
+            let systemError = systemError as NSError
+            return "setNetworkSettings (\(systemError.domain) \(systemError.code))"
+        case .startWireGuardBackend(let code):
+            return "startWireGuardBackend (\(code))"
+        case nil:
+            let error = error as NSError
+            return "\(error.domain) \(error.code)"
+        }
+    }
+}
+
 /// Enum representing internal state of the `WireGuardAdapter`
 private enum State {
     /// The tunnel is stopped
@@ -503,7 +527,7 @@ public class WireGuardAdapter {
                     settingsGenerator
                 )
             } catch {
-                self.logHandler(.error, "Failed to restart backend: \(error.localizedDescription)")
+                self.logHandler(.error, "Failed to restart backend: \(WireGuardAdapterError.logText(of: error))")
             }
 
         case .stopped:

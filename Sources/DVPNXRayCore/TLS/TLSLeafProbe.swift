@@ -4,6 +4,7 @@
 //
 
 import CryptoKit
+import DVPNCoreKit
 import Foundation
 import Network
 import os
@@ -130,9 +131,9 @@ private extension TLSLeafProbe {
                         finish(.failure(Error.noCertificate(host: host, port: port)))
                     }
                 case let .failed(error):
-                    finish(.failure(Error.failed(host: host, port: port, reason: error.localizedDescription)))
+                    finish(.failure(Error.failed(host: host, port: port, reason: error.logDescription)))
                 case let .waiting(error):
-                    finish(.failure(Error.failed(host: host, port: port, reason: error.localizedDescription)))
+                    finish(.failure(Error.failed(host: host, port: port, reason: error.logDescription)))
                 case .cancelled:
                     finish(.failure(Error.failed(host: host, port: port, reason: "cancelled")))
                 default:

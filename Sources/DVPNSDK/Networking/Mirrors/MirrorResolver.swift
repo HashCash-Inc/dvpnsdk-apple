@@ -128,7 +128,7 @@ actor MirrorResolver {
             log.debug("refresh cancelled")
             return nil
         } catch {
-            log.error("refresh failed: \(error.localizedDescription, privacy: .public)")
+            log.error("refresh failed: \(MirroredTransport.describeFailure(error), privacy: .public)")
             return nil
         }
     }

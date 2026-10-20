@@ -60,7 +60,7 @@ open class XrayPacketTunnelProvider: ProxyPacketTunnelProvider {
         do {
             try XrayInvoke.stopXray()
         } catch {
-            logger.error("Xray failed to stop: \(error.localizedDescription, privacy: .public)")
+            logger.error("Xray failed to stop: \(error.logDescription, privacy: .public)")
         }
     }
 }

@@ -114,6 +114,21 @@ struct HardFailureTests {
         #expect(MirroredTransport.describeFailure(HardFailure.error(.unreachable(.timedOut))) == "unreachable -1001")
         #expect(MirroredTransport.describeFailure(MirrorError.noHealthyMirror) == "noHealthyMirror")
     }
+
+    /// Any other failure is named by its case, or its domain and code, never printed whole: no file path, no value.
+    @Test
+    func anyOtherFailureIsLoggedByItsCaseOrCode() {
+        #expect(MirroredTransport.describeFailure(CancellationError()) == "cancelled")
+
+        let fileError = NSError(domain: NSCocoaErrorDomain, code: 4, userInfo: [NSFilePathErrorKey: "/Users/someone/x.json"])
+        #expect(MirroredTransport.describeFailure(fileError) == "NSCocoaErrorDomain 4")
+
+        let encoding = EncodingError.invalidValue("distinct-value", EncodingError.Context(codingPath: [], debugDescription: "d"))
+        #expect(!MirroredTransport.describeFailure(encoding).contains("distinct"))
+
+        let transport = SNISpoofTransport.TransportError.connectionFailed(URLError(.timedOut))
+        #expect(MirroredTransport.describeFailure(transport) == "connectionFailed NSURLErrorDomain -1001")
+    }
 }
 
 // MARK: - Host Replacement

@@ -36,7 +36,7 @@ struct MirrorsBootstrapService: Sendable {
                         log.debug("bootstrap \(name, privacy: .public) returned \(mirrors.count) mirror(s)")
                         return mirrors
                     } catch {
-                        log.debug("bootstrap \(name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+                        log.debug("bootstrap \(name, privacy: .public) failed: \(MirroredTransport.describeFailure(error), privacy: .public)")
                         return nil
                     }
                 }

@@ -358,6 +358,9 @@ extension MirroredTransport {
         return "\(Double(milliseconds / 100) / 10) s"
     }
 
+    /// A failure as a log line names it, never printed whole: an error's user info or values can hold a file's path or
+    /// a request's data. The API's errors by their answer; a mirror's or a transport's error by its case, with the
+    /// domain and code of the error it wraps; anything else by its domain and code.
     static func describeFailure(_ error: any Error) -> String {
         switch error {
         case let failure as HardFailure:
@@ -369,9 +372,31 @@ extension MirroredTransport {
             }
         case let error as APIError:
             return describe(error)
+        case is CancellationError:
+            return "cancelled"
+        case let error as MirrorError:
+            return caseName(of: error)
+        case let error as SNISpoofTransport.TransportError:
+            switch error {
+            case let .connectionFailed(wrapped), let .sendFailed(wrapped), let .receiveFailed(wrapped):
+                return "\(caseName(of: error)) \(domainAndCode(of: wrapped))"
+            case .invalidRootCA, .invalidStatusLine, .malformedResponse, .missingURL:
+                return caseName(of: error)
+            }
         default:
-            return String(describing: error)
+            return domainAndCode(of: error)
         }
+    }
+
+    /// An enum's case, without its values.
+    private static func caseName(of error: any Error) -> String {
+        // `Swift.`: this module has a `Mirror` of its own, the backend's.
+        Swift.Mirror(reflecting: error).children.first?.label ?? String(describing: error)
+    }
+
+    private static func domainAndCode(of error: any Error) -> String {
+        let error = error as NSError
+        return "\(error.domain) \(error.code)"
     }
 
     static func describe(_ error: APIError) -> String {

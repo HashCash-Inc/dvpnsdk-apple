@@ -17,6 +17,9 @@ versions follow [Semantic Versioning](https://semver.org); until 1.0.0 a minor v
 - A fallback to a mirror is logged at the notice level instead of info.
 - `SplitTunnelManager` says that its calls must not overlap or be cancelled: a call pauses inside, so a newer one made
   in that pause can be overtaken by it, and a cancelled one can start a proxy that is still stopping.
+- A log line prints an error by the SDK's own words, or by the system's words with the error's domain and code, never
+  whole: no line prints a file error's full path or a Swift error's values. `TunnelActivationError` and
+  `SplitTunnelError` add a system error's domain and code to their description.
 
 ### Fixed
 

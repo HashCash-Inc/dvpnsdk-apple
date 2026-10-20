@@ -3,6 +3,7 @@
 //  DVPNSDK
 //
 
+import DVPNCoreKit
 import DVPNXRayCore
 import os
 
@@ -33,7 +34,7 @@ enum XraySecurityResolver {
         } catch {
             resolved.security = .none
             logger.info(
-                "No TLS on \(host, privacy: .public):\(port, privacy: .public) (\(error.localizedDescription, privacy: .public)); using plaintext"
+                "No TLS (\(error.logDescription, privacy: .public)); using plaintext"
             )
         }
         return resolved

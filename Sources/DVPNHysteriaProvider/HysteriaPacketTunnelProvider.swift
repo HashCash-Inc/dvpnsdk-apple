@@ -38,7 +38,7 @@ open class HysteriaPacketTunnelProvider: ProxyPacketTunnelProvider {
         do {
             try HysteriaBridge.stop()
         } catch {
-            logger.error("Hysteria failed to stop: \(error.localizedDescription, privacy: .public)")
+            logger.error("Hysteria failed to stop: \(error.logDescription, privacy: .public)")
         }
     }
 }

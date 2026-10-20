@@ -158,7 +158,7 @@ extension TunnelContainer {
                 do {
                     try await tunnelProvider.saveToPreferences()
                 } catch {
-                    logger.error("Error saving tunnel after re-enabling: \(error, privacy: .public)")
+                    logger.error("Error saving tunnel after re-enabling: \(error.logDescription, privacy: .public)")
                     status = .disconnected
                     throw .savingFailed(systemError: error)
                 }
@@ -180,13 +180,13 @@ extension TunnelContainer {
                 do {
                     try await tunnelProvider.loadFromPreferences()
                 } catch {
-                    logger.error("startActivation: Error reloading tunnel: \(error, privacy: .public)")
+                    logger.error("startActivation: Error reloading tunnel: \(error.logDescription, privacy: .public)")
                     status = .disconnected
                     throw .loadingFailed(systemError: error)
                 }
                 lastError = error
             } catch {
-                logger.error("Failed to activate tunnel: \(error, privacy: .public)")
+                logger.error("Failed to activate tunnel: \(error.logDescription, privacy: .public)")
                 status = .disconnected
                 throw .startingFailed(systemError: error)
             }
@@ -248,7 +248,7 @@ private extension TunnelContainer {
         do {
             response = try await tunnelProvider.sendProviderMessage(Data([0]))
         } catch {
-            return .unavailable("provider message failed: \(error.localizedDescription)")
+            return .unavailable("provider message failed: \(error.logDescription)")
         }
         guard let data = response, !data.isEmpty else { return .unavailable("extension returned no runtime configuration") }
         guard let configuration = String(data: data, encoding: .utf8) else { return .unavailable("runtime configuration is not UTF-8") }

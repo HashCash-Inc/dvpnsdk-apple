@@ -3,6 +3,7 @@
 //  DVPNSDK
 //
 
+import DVPNCoreKit
 import Foundation
 import NetworkExtension
 
@@ -122,13 +123,13 @@ extension TunnelActivationError: CustomStringConvertible {
         case .inactive:
             return "Tunnel is inactive"
         case let .startingFailed(systemError):
-            return "Starting failed due to \(systemError.localizedDescription)"
+            return "Starting failed due to \(systemError.logDescription)"
         case let .savingFailed(systemError):
-            return "Saving failed due to \(systemError.localizedDescription)"
+            return "Saving failed due to \(systemError.logDescription)"
         case let .loadingFailed(systemError):
-            return "Loading failed due to \(systemError.localizedDescription)"
+            return "Loading failed due to \(systemError.logDescription)"
         case let .retryLimitReached(systemError):
-            return "Reached retry limit with \(systemError.localizedDescription)"
+            return "Reached retry limit with \(systemError.logDescription)"
         case .activationAttemptFailed:
             return "Failed to activate tunnel"
         case .timedOut:

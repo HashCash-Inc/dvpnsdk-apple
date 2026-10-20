@@ -57,7 +57,7 @@ public enum ExtensionLogFile {
             let url = directory.appendingPathComponent("\(process).log")
             try lines.joined(separator: "\n").appending("\n").write(to: url, atomically: true, encoding: .utf8)
         } catch {
-            logger.error("Log file not written: \(error, privacy: .public)")
+            logger.error("Log file not written: \(error.logDescription, privacy: .public)")
         }
     }
 

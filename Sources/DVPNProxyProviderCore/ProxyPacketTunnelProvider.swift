@@ -77,7 +77,7 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
             try await startProxy(network: network, proxy: proxy)
             try startSocks5Tunnel(proxy: proxy)
         } catch {
-            logger.error("starting tunnel failed due to: \(error, privacy: .public)")
+            logger.error("starting tunnel failed due to: \(error.logDescription, privacy: .public)")
             // Only the error text is recorded, never the configuration.
             ProxyStartErrorStore.record(error.logDescription)
             TunnelStateStore.record(isUp: false)

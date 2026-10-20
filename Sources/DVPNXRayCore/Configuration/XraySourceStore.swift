@@ -64,7 +64,7 @@ public enum XraySourceStore {
             let data = try Data(contentsOf: configURL)
             return try JSONDecoder().decode(XraySource.self, from: data)
         } catch {
-            throw .unreadable(error.localizedDescription)
+            throw .unreadable(error.logDescription)
         }
     }
 
@@ -89,7 +89,7 @@ public enum XraySourceStore {
             _ = try loadCurrent()
             return false
         } catch {
-            logger.info("Removing unreadable Xray configuration: \(error, privacy: .public)")
+            logger.info("Removing unreadable Xray configuration: \(error.logDescription, privacy: .public)")
             try? delete()
             return true
         }

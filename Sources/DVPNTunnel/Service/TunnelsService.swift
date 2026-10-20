@@ -72,7 +72,7 @@ extension TunnelsService {
         do {
             managers = try await store.loadAllProfiles()
         } catch {
-            logger.error("Failed to get tunnel manager: \(error, privacy: .public)")
+            logger.error("Failed to get tunnel manager: \(error.logDescription, privacy: .public)")
             throw .loadTunnelsFailed(systemError: error)
         }
 
@@ -99,7 +99,7 @@ extension TunnelsService {
                 do {
                     try await manager.removeFromPreferences()
                 } catch {
-                    logger.error("Failed to remove orphaned tunnel: \(error, privacy: .public)")
+                    logger.error("Failed to remove orphaned tunnel: \(error.logDescription, privacy: .public)")
                 }
             } else {
                 kept.append(manager)
@@ -140,7 +140,7 @@ extension TunnelsService {
         do {
             try await performingOwnWrite { try await manager.saveToPreferences() }
         } catch {
-            logger.error("Add: Saving configuration failed: \(error, privacy: .public)")
+            logger.error("Add: Saving configuration failed: \(error.logDescription, privacy: .public)")
             manager.provider?.destroyStoredConfiguration()
             throw .addTunnelFailed(systemError: error)
         }
@@ -176,7 +176,7 @@ extension TunnelsService {
         do {
             try await performingOwnWrite { try await manager.saveToPreferences() }
         } catch {
-            logger.error("Add: Saving configuration failed: \(error, privacy: .public)")
+            logger.error("Add: Saving configuration failed: \(error.logDescription, privacy: .public)")
             manager.provider?.destroyConfigurationReference()
             throw .addTunnelFailed(systemError: error)
         }
@@ -194,7 +194,7 @@ extension TunnelsService {
         do {
             try await performingOwnWrite { try await manager.saveToPreferences() }
         } catch {
-            logger.error("Modify: Saving configuration failed: \(error, privacy: .public)")
+            logger.error("Modify: Saving configuration failed: \(error.logDescription, privacy: .public)")
             throw .addTunnelFailed(systemError: error)
         }
 
@@ -202,7 +202,7 @@ extension TunnelsService {
         do {
             try await manager.loadFromPreferences()
         } catch {
-            logger.error("Modify: Re-loading after saving configuration failed: \(error, privacy: .public)")
+            logger.error("Modify: Re-loading after saving configuration failed: \(error.logDescription, privacy: .public)")
             throw .loadTunnelsFailed(systemError: error)
         }
     }
@@ -238,7 +238,7 @@ extension TunnelsService {
         do {
             try await performingOwnWrite { try await manager.saveToPreferences() }
         } catch {
-            logger.error("Modify: Saving configuration failed: \(error, privacy: .public)")
+            logger.error("Modify: Saving configuration failed: \(error.logDescription, privacy: .public)")
             throw .addTunnelFailed(systemError: error)
         }
 
@@ -258,7 +258,7 @@ extension TunnelsService {
         do {
             try await manager.loadFromPreferences()
         } catch {
-            logger.error("Modify: Re-loading after saving configuration failed: \(error, privacy: .public)")
+            logger.error("Modify: Re-loading after saving configuration failed: \(error.logDescription, privacy: .public)")
             throw .loadTunnelsFailed(systemError: error)
         }
     }
@@ -320,7 +320,7 @@ extension TunnelsService {
         do {
             try await set(onDemandEnabled: false, for: tunnel)
         } catch {
-            logger.error("Failed to disable on-demand before deactivation: \(error, privacy: .public)")
+            logger.error("Failed to disable on-demand before deactivation: \(error.logDescription, privacy: .public)")
         }
         await startDeactivation(of: tunnel)
         return true
@@ -342,7 +342,7 @@ extension TunnelsService {
         do {
             try await performingOwnWrite { try await manager.removeFromPreferences() }
         } catch {
-            logger.error("Remove: Saving configuration failed: \(error, privacy: .public)")
+            logger.error("Remove: Saving configuration failed: \(error.logDescription, privacy: .public)")
             throw .removeTunnelFailed(systemError: error)
         }
 
@@ -368,7 +368,7 @@ extension TunnelsService {
         do {
             loadedTunnelProviders = try await store.loadAllProfiles()
         } catch {
-            logger.error("Reload: failed to load tunnel managers: \(error, privacy: .public)")
+            logger.error("Reload: failed to load tunnel managers: \(error.logDescription, privacy: .public)")
             return
         }
 

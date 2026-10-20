@@ -82,6 +82,15 @@ custom_rules:
     regex: '\bimport\s+(NetworkExtension|WireGuardKit|DVPN(?!SDK\b)\w+)\b'
     message: "DVPNSDK is the backend client: tunnel code belongs in the tunnel modules (README.md, Products)."
     severity: error
+  errors_are_logged_by_their_words:
+    name: "An error is logged by its words"
+    included: 'Sources/.*\.swift$'
+    excluded: 'Sources/DVPNCoreKit/Error\+LogDescription\.swift$'
+    # `\(error)`, `\(error, privacy: …)` or `\(error.localizedDescription…)` in any string: a log line's, or a
+    # recorded reason that one prints later.
+    regex: '\\\(\w*[eE]rror(\.localizedDescription)?(\s*,\s*privacy:[^)]*)?\)'
+    message: "Log an error by its `logDescription` (in DVPNSDK, `MirroredTransport.describeFailure`): printed whole, its user info can hold a file's path and a Swift error's values a key."
+    severity: error
   no_ui:
     name: "No UI"
     regex: '\bimport\s+(SwiftUI|UIKit|AppKit)\b'

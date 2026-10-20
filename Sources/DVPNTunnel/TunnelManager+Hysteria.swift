@@ -51,7 +51,7 @@ extension TunnelManager {
         do {
             try HysteriaConfigurationStore.save(configuration)
         } catch {
-            logger.error("Failed to store Hysteria configuration: \(error, privacy: .public)")
+            logger.error("Failed to store Hysteria configuration: \(error.logDescription, privacy: .public)")
             throw .addTunnelFailed(systemError: error)
         }
 

@@ -49,7 +49,7 @@ public extension NETunnelProviderProtocol {
             }
 
         } catch {
-            logger.error("Failed to save WireGuard config to file: \(error, privacy: .public)")
+            logger.error("Failed to save WireGuard config to file: \(error.logDescription, privacy: .public)")
             return nil
         }
     }
@@ -59,7 +59,7 @@ public extension NETunnelProviderProtocol {
         do {
             return try WireGuardFileStorage.load()
         } catch {
-            logger.error("Failed to load WireGuard config from file: \(error, privacy: .public)")
+            logger.error("Failed to load WireGuard config from file: \(error.logDescription, privacy: .public)")
             return nil
         }
     }

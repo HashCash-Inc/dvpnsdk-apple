@@ -24,7 +24,7 @@ public enum SplitTunnelError: Error, Sendable, CustomStringConvertible {
         case .notSupported:
             return "Split tunnelling is not available in this app"
         case let .loadFailed(error), let .saveFailed(error), let .startFailed(error):
-            return error.localizedDescription
+            return error.logDescription
         }
     }
 }
@@ -134,7 +134,7 @@ private extension SplitTunnelManager {
                 logger.info("Split tunnel: the running proxy took the new setting")
                 return
             } catch {
-                logger.warning("Split tunnel: the running proxy did not take the new setting, restarting it: \(error, privacy: .public)")
+                logger.warning("Split tunnel: the running proxy did not take the new setting, restarting it: \(error.logDescription, privacy: .public)")
             }
         }
         try await start(profile)
@@ -149,7 +149,7 @@ private extension SplitTunnelManager {
         do {
             try profile.startProxy()
         } catch {
-            logger.error("Split tunnel: starting the proxy failed: \(error, privacy: .public)")
+            logger.error("Split tunnel: starting the proxy failed: \(error.logDescription, privacy: .public)")
             throw .startFailed(systemError: error)
         }
         if await wait(for: profile, toReach: .connected) {
@@ -189,7 +189,7 @@ private extension SplitTunnelManager {
             try await profile.saveToPreferences()
             try await profile.loadFromPreferences()
         } catch {
-            logger.error("Split tunnel: saving the proxy configuration failed: \(error, privacy: .public)")
+            logger.error("Split tunnel: saving the proxy configuration failed: \(error.logDescription, privacy: .public)")
             throw .saveFailed(systemError: error)
         }
     }
