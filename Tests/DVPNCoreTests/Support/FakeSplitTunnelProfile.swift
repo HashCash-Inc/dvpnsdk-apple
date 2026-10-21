@@ -27,6 +27,8 @@ final class FakeSplitTunnelProfile: SplitTunnelProfile {
     var saveError: (any Error)?
     var startError: (any Error)?
     var messageError: (any Error)?
+    /// Runs after each save the system accepts.
+    var onSave: ((FakeSplitTunnelProfile) -> Void)?
 
     init(providerBundleID: String? = nil, status: NEVPNStatus = .disconnected) {
         if let providerBundleID {
@@ -41,6 +43,7 @@ final class FakeSplitTunnelProfile: SplitTunnelProfile {
     func saveToPreferences() async throws {
         saves += 1
         if let saveError { throw saveError }
+        onSave?(self)
     }
 
     func loadFromPreferences() async throws {}
@@ -69,6 +72,7 @@ final class FakeSplitTunnelProfile: SplitTunnelProfile {
 
 @MainActor
 final class FakeSplitTunnelProfileStore: SplitTunnelProfileStore {
+    /// The configurations the system holds: a test's, and each one made here once a save of it succeeds.
     var profiles: [FakeSplitTunnelProfile] = []
     private(set) var made: [FakeSplitTunnelProfile] = []
     var onMake: ((FakeSplitTunnelProfile) -> Void)?
@@ -80,6 +84,9 @@ final class FakeSplitTunnelProfileStore: SplitTunnelProfileStore {
     func makeProfile() -> any SplitTunnelProfile {
         let profile = FakeSplitTunnelProfile()
         made.append(profile)
+        profile.onSave = { [unowned self] saved in
+            if !profiles.contains(where: { $0 === saved }) { profiles.append(saved) }
+        }
         onMake?(profile)
         return profile
     }

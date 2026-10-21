@@ -154,6 +154,7 @@ struct SplitTunnelManagerTests {
         await #expect(throws: SplitTunnelError.self) { try await manager.apply(enabled) }
         #expect(store.made.first?.starts == 0)
         #expect(manager.settings() == .disabled, "a declined prompt leaves the setting as it was")
+        #expect(store.profiles.isEmpty, "a declined prompt saves no configuration")
     }
 
     /// A launch leaves a running proxy as it is: it already has the saved setting, and restarting it crashed the
@@ -183,6 +184,49 @@ struct SplitTunnelManagerTests {
 
         #expect(existing.starts == 1)
         #expect(existing.connectionStatus == .connected)
+    }
+
+    /// A configuration removed in System Settings while the app runs is made again at the next change, as the first one
+    /// was: starting the removed one never connects.
+    @Test
+    func aConfigurationRemovedInSystemSettingsIsMadeAgain() async throws {
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let removed = FakeSplitTunnelProfile(providerBundleID: extensionID)
+        let (manager, store) = makeManager([removed])
+        try await manager.apply(enabled)
+        // Removed in System Settings: the system drops the configuration and stops its proxy.
+        store.profiles = []
+        removed.connectionStatus = .invalid
+
+        try await manager.apply(SplitTunnelSettings(mode: .allowSelected, apps: ["com.apple.Safari"]))
+
+        #expect(removed.starts == 1 && removed.messages.isEmpty)
+        let remade = try #require(store.made.first)
+        #expect(store.made.count == 1 && store.profiles.first === remade)
+        #expect(remade.saves == 1 && remade.providerBundleID == extensionID)
+        #expect(remade.starts == 1 && remade.connectionStatus == .connected)
+        #expect(manager.profile === remade, "the manager keeps the configuration it made")
+        #expect(await manager.isRunning())
+    }
+
+    /// The configuration loaded last stays alive between calls, so the system goes on posting its proxy's status
+    /// changes, which an app watches to restart a proxy that stopped.
+    @Test
+    func theConfigurationLoadedLastStaysAlive() async throws {
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        try SplitTunnelSettingsStore.save(enabled, in: defaults)
+        let (manager, store) = makeManager()
+        weak var loaded: FakeSplitTunnelProfile?
+        do {
+            let running = FakeSplitTunnelProfile(providerBundleID: extensionID, status: .connected)
+            loaded = running
+            store.profiles = [running]
+        }
+
+        try await manager.startIfEnabled()
+        store.profiles = []
+
+        withExtendedLifetime(manager) { #expect(loaded != nil, "the manager holds the configuration it loaded last") }
     }
 
     // MARK: Helpers

@@ -48,7 +48,10 @@ public final class SplitTunnelManager {
     private let store: any SplitTunnelProfileStore
     private let defaults: UserDefaults
     private let clock: any Clock<Duration>
-    private var profile: (any SplitTunnelProfile)?
+    /// The configuration loaded last, kept so that the system goes on posting its proxy's status changes
+    /// (`NEVPNStatusDidChange`), which an app watches to restart a proxy that stopped. `loadProfile()` reads it again
+    /// at every call.
+    private(set) var profile: (any SplitTunnelProfile)?
 
     public convenience init(configuration: DVPNCoreConfiguration) {
         self.init(configuration: configuration, store: SystemSplitTunnelProfileStore(), defaults: .shared, clock: ContinuousClock())
@@ -194,9 +197,10 @@ private extension SplitTunnelManager {
         }
     }
 
-    /// The app's proxy configuration, if one was saved before; ours by bundle ID, else whatever the app has.
+    /// The app's proxy configuration as the system holds it now, if one was saved; ours by bundle ID, else whatever the
+    /// app has. Read at every call: one removed in System Settings is gone from the system, not from an object loaded
+    /// before it, and starting that object never connects. Then the caller makes the configuration again.
     func loadProfile() async throws(SplitTunnelError) -> (any SplitTunnelProfile)? {
-        if let profile { return profile }
         do {
             let all = try await store.loadAllProfiles()
             let bundleID = configuration.splitTunnelProviderBundleID
