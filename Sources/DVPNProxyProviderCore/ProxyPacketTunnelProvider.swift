@@ -60,7 +60,9 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
             }
             return settings
         }()
-        settings.dnsSettings = NEDNSSettings(servers: TunnelConfigDirectories.dns())
+        // VALT patch: hev answers DNS itself (mapdns below), A records only, so apps get no IPv6 address for a name and
+        // never try IPv6 a node may not carry; the node resolves the name. A private address, so browsers do not upgrade it to DoH.
+        settings.dnsSettings = NEDNSSettings(servers: [Self.mappedDNSAddress])
         return settings
     }
 
@@ -102,6 +104,9 @@ open class ProxyPacketTunnelProvider: NEPacketTunnelProvider {
 // MARK: - Internal
 
 extension ProxyPacketTunnelProvider {
+    /// hev's mapped DNS, inside the tunnel's 198.18.0.0/16; names map to 198.19.0.0/16 (VALT patch).
+    static let mappedDNSAddress = "198.18.0.2"
+
     func startSocks5Tunnel(proxy: LocalProxy) throws {
         let config = """
         tunnel:
@@ -112,6 +117,12 @@ extension ProxyPacketTunnelProvider {
           udp: 'udp'
           username: '\(proxy.username)'
           password: '\(proxy.password)'
+        mapdns:
+          address: \(Self.mappedDNSAddress)
+          port: 53
+          network: 198.19.0.0
+          netmask: 255.255.0.0
+          cache-size: 10000
         misc:
           task-stack-size: 20480
           connect-timeout: 5000
