@@ -17,7 +17,7 @@
 # to 0x4000" when linking. Regular zero-filled globals keep the compiler's alignment instead.
 set -euo pipefail
 
-HEV_TAG="2.8.0"
+HEV_TAG="2.19.1"
 IOS_MIN="18.0"
 TVOS_MIN="18.0"
 MACOS_MIN="15.0"
