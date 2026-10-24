@@ -1,0 +1,5 @@
+framework module HevSocks5Tunnel {
+  umbrella header "hev-main.h"
+  export *
+  module * { export * }
+}
