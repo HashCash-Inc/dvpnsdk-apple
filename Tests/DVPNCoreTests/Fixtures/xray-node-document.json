@@ -105,7 +105,13 @@
     "domainMatcher" : "hybrid",
     "domainStrategy" : "AsIs",
     "rules" : [
-
+      {
+        "ip" : [
+          "::\/0"
+        ],
+        "outboundTag" : "block",
+        "type" : "field"
+      }
     ]
   }
 }

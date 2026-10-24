@@ -51,7 +51,10 @@ public enum XrayDocumentBuilder {
         }
         configuration["inbounds"] = [try inbound(localProxy)]
         var route = XModel.default
-        configuration["routing"] = try route.build()
+        var routing = try route.build() as? [String: Any] ?? [:]
+        // VALT patch: the tunnel claims all of IPv6, so refuse it at once (blackhole) and apps fall back to IPv4 instead of hanging on nodes without IPv6.
+        routing["rules"] = [["type": "field", "ip": ["::/0"], "outboundTag": "block"]]
+        configuration["routing"] = routing
         configuration["outbounds"] = [proxy] + supportingOutbounds + [
             ["tag": "direct", "protocol": "freedom"],
             ["tag": "block", "protocol": "blackhole"],
