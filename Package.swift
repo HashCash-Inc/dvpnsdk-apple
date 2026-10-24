@@ -124,7 +124,9 @@ let package = Package(
 
         engine("LibXray"), // scripts/build-libxray.sh
         engine("LibHysteria"), // scripts/build-libhysteria.sh
-        engine("HevSocks5Tunnel"), // scripts/build-hev.sh
+        // VALT patch: hev 2.19.1 is committed in Frameworks/; named by path because SwiftPM caches this manifest's
+        // evaluation by its text, so engine()'s fileExists check could keep release 0.1.0's 2.8.0 asset.
+        .binaryTarget(name: "HevSocks5Tunnel", path: "Frameworks/HevSocks5Tunnel.xcframework"), // scripts/build-hev.sh
         wireGuardGo, // scripts/build-wireguard-go.sh
 
         // MARK: - Tests
